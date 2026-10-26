@@ -4,6 +4,19 @@ Use `tgpp::Bot` for direct API calls and `tgpp::ext::Application` to organize a
 bot into features. The generated client and the handwritten application layer
 are separate CMake targets:
 
+```mermaid
+flowchart LR
+    Spec["Pinned Telegram API spec"] --> Generator["Python generator"]
+    Generator --> Types["C++17 types and API methods"]
+    Types --> Bot["tgpp::Bot"]
+    Polling["Long polling"] --> App["Application workers"]
+    Webhook["Webhook adapter"] --> App
+    App --> Features["Feature modules and handlers"]
+    Features --> Bot
+    Bot --> Pool["Bounded curl handle pool"]
+    Pool --> Telegram["Telegram Bot API"]
+```
+
 ```cmake
 target_link_libraries(my_bot PRIVATE tgpp::ext)
 ```
@@ -66,6 +79,22 @@ Database details belong behind repository interfaces.
 Favor small classes with injected dependencies. `Application` is not a service
 locator, and handlers do not need to inherit from an application-wide bot class.
 
+```mermaid
+classDiagram
+    ConcurrentApplication *-- Application : worker instances
+    Application *-- Module : feature lifecycle
+    Application *-- Router : root
+    Module --> Router : registers feature routes
+    Router *-- Handler : ordered routes
+    Router *-- Middleware : wraps dispatch
+    Router *-- Router : child scopes
+    Handler --> Context : update view
+    Handler --> Service : constructor injection
+    Service --> Repository : persistence interface
+    Context --> Bot : typed API calls
+    Bot --> Transport : HTTP abstraction
+```
+
 ## A class per command
 
 ```cpp
@@ -104,6 +133,19 @@ The application owns the module; its feature router owns the handlers. Both
 can own shared service references. If passing dependencies by reference, their
 owners must outlive the application. Avoid capturing stack references that
 expire before polling begins.
+
+```mermaid
+flowchart TD
+    Main["app/main.cpp: composition root"] --> Module["features/tasks: TasksModule"]
+    Main --> Service["features/tasks/domain: TaskService"]
+    Main --> Database["infrastructure: repository adapter"]
+    Module --> Add["handlers: AddTaskCommand"]
+    Module --> List["handlers: ListTasksCommand"]
+    Add --> Service
+    List --> Service
+    Service --> Interface["domain: TaskRepository interface"]
+    Database -. implements .-> Interface
+```
 
 ## Routing and middleware
 
@@ -220,11 +262,110 @@ retry policy appropriate to its storage and operations.
 in-flight HTTP request. Signal handlers should only update a `sig_atomic_t`
 flag and expose it through the optional `run()` predicate, as the example does.
 
-Dispatch and handler execution are sequential. Only `Polling::request_stop()`
-is a cross-thread control API. A webhook server should serialize calls into
-one application, or use separate application instances with appropriately
-synchronized services. Do not retain `Context`, `Next`, or update views for
-background jobs; copy the needed values into a job and use an injected worker.
+## Concurrent applications
+
+`Application` is the sequential unit of execution. `ConcurrentApplication`
+owns a fixed set of independent applications and worker threads, created by
+your factory. Incoming updates are moved into bounded FIFO queues, using chat
+ID to choose a worker. Messages and callbacks from one chat stay ordered;
+different worker lanes execute concurrently. Chats that hash to the same lane
+share its queue. Chatless updates use key zero. Supply `ConcurrencyOptions::key`
+when ordering must follow a user, business account, or another domain scope.
+
+```cpp
+tgpp::ext::ConcurrentApplication app([transport] {
+    auto worker = std::make_unique<tgpp::ext::Application>(transport);
+    worker->install<WelcomeModule>();
+    return worker;
+}, {4, 256, {}});
+
+tgpp::Bot bot(transport);
+tgpp::ext::Polling(app, bot).run();
+```
+
+The factory creates new modules, handlers, and middleware for every worker.
+Each application is configured and started before worker execution begins.
+Shared repositories and other shared dependencies need their own synchronization
+or concurrency-safe clients. Worker-local handler state needs no application-wide
+lock. Services that require thread-affine startup should establish those
+resources lazily in the worker's handler/service boundary.
+
+```mermaid
+flowchart LR
+    Updates["Update producer"] --> Key["Chat ordering key"]
+    Key --> Q0["Bounded FIFO lane 0"]
+    Key --> Q1["Bounded FIFO lane 1"]
+    Key --> Q2["Bounded FIFO lane N"]
+    Q0 --> A0["Worker 0: Application + modules"]
+    Q1 --> A1["Worker 1: Application + modules"]
+    Q2 --> A2["Worker N: Application + modules"]
+    A0 --> HTTP["Shared bounded HTTP pool"]
+    A1 --> HTTP
+    A2 --> HTTP
+    Q0 -. full .-> Wait["Producer waits or try_submit rejects"]
+```
+
+`submit(Update)` takes ownership and returns `std::future<Result>`; it waits
+when the selected queue is full. `try_submit(Update&)` is nonblocking and moves
+the update only when accepted, so a webhook adapter can retain the rejected
+payload and apply backpressure. `submit`, `try_submit`, and `request_stop` are
+thread-safe; a custom key function must also be thread-safe. Default limits
+are four workers and 256 queued updates per worker, plus one active update per
+worker. Queue capacity counts updates; size limits on webhook bodies remain
+the adapter's responsibility.
+
+`request_stop()` closes acceptance, wakes blocked producers, and drains accepted
+work. `shutdown()` joins workers and stops modules in reverse order within
+each application. Call it from one external control thread; handlers may call
+`request_stop()`. Destroying the dispatcher also drains and joins. Application
+and dependency ownership must outlive all accepted work.
+
+Concurrent polling submits the fetched batch and collects futures in update
+order. Only a contiguous successful prefix advances the Telegram offset. If
+one handler fails, later accepted updates are still drained before the error
+returns; their side effects may replay after a restart. Use domain idempotency
+keys for writes that must tolerate that replay.
+
+```mermaid
+sequenceDiagram
+    participant P as Polling
+    participant Q as ConcurrentApplication
+    participant A as Chat A worker
+    participant B as Chat B worker
+    P->>Q: submit update 10, chat A
+    Q->>A: ordered dispatch
+    P->>Q: submit update 11, chat B
+    Q->>B: parallel dispatch
+    B-->>P: future 11 completes
+    Note over P: offset waits for update 10
+    A-->>P: future 10 completes
+    P->>P: acknowledge successful prefix through 11
+```
+
+Do not retain `Context`, `Next`, or update views for background jobs; copy needed
+values into a job. The [concurrent example](../examples/concurrent.cpp) shows a
+complete polling setup. The showcase uses its own per-chat background services
+to keep lengthy media tours separate from lightweight update handlers.
+
+## HTTP performance and resource bounds
+
+`CurlTransport` leases exclusive handles from a pool, resets request options
+after each call, and retains live connections plus TLS and DNS caches. This
+avoids rebuilding the connection on every API call. Handles are never used by
+two threads simultaneously, following libcurl's
+[threading contract](https://curl.se/libcurl/c/threadsafe.html) and
+[reset behavior](https://curl.se/libcurl/c/curl_easy_reset.html).
+
+Configure `CurlOptions::max_connections` (default eight) and
+`pool_timeout_seconds` (default 30). An exhausted pool waits with a timeout;
+each HTTP call keeps its existing connect and overall timeouts. Reserve capacity
+for a long poll as well as handler API calls. TLS verification and redirect
+policy are unchanged. Telegram's rate limits still apply.
+
+Build `TGPP_BUILD_BENCHMARKS=ON` and run `tgpp_dispatch_bench` to compare one
+and four workers on a fixed simulated I/O workload. Report measurements with
+the workload and build configuration; they are not Telegram network throughput.
+The HTTP integration test also verifies persistent connection reuse.
 
 ## Test at the appropriate boundary
 

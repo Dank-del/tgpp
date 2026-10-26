@@ -1,5 +1,6 @@
 #pragma once
 #include "application.hpp"
+#include "concurrent.hpp"
 #include <atomic>
 
 namespace tgpp::ext {
@@ -9,13 +10,16 @@ struct PollingOptions {
 };
 
 class Polling {
-    Application& application_;
+    Application* application_ = nullptr;
+    ConcurrentApplication* concurrent_ = nullptr;
+    const Bot* bot_;
     PollingOptions options_;
     std::optional<std::int64_t> offset_;
     std::atomic<bool> stop_requested_{false};
     std::size_t poll(const std::function<bool()>& keep_running);
 public:
     explicit Polling(Application& application, PollingOptions options = {});
+    Polling(ConcurrentApplication& application, const Bot& bot, PollingOptions options = {});
     // Returns processed updates; exposes checkpoint for a persistent store.
     std::size_t poll_once();
     std::optional<std::int64_t> offset() const noexcept { return offset_; }

@@ -11,6 +11,7 @@ EXAMPLES = {
     "modular_bot": "build/examples/modular_bot/modular_bot",
     "send_message": "build/send_message",
     "showcase_bot": "build/examples/showcase_bot/showcase_bot",
+    "concurrent_bot": "build/concurrent_bot",
 }
 
 

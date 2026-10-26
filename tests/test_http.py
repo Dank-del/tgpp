@@ -8,23 +8,37 @@ import subprocess
 import sys
 import tempfile
 import threading
+import time
 
 PAYLOAD = b"binary\x00payload\xff\r\n"
 MESSAGE = {"message_id": 1, "date": 1700000000, "chat": {"id": 42, "type": "private"}}
 
 
 class Handler(http.server.BaseHTTPRequestHandler):
+    protocol_version = "HTTP/1.1"
     errors = []
     seen = []
+    ports = set()
+    peer_ports = []
+    guard = threading.Lock()
+    active = 0
+    max_active = 0
 
     def log_message(self, *_):
         pass
 
     def do_POST(self):
+        with self.guard:
+            type(self).active += 1
+            type(self).max_active = max(self.max_active, self.active)
         try:
             assert self.path.startswith("/bot123:test_token/")
             method = self.path.rsplit("/", 1)[1]
             self.seen.append(method)
+            self.ports.add(self.client_address[1])
+            self.peer_ports.append(self.client_address[1])
+            if method == "getMe":
+                time.sleep(0.05)  # Keep concurrent requests overlapping.
             raw = self.rfile.read(int(self.headers["Content-Length"]))
             content_type = self.headers["Content-Type"]
             if content_type.startswith("multipart/form-data"):
@@ -71,6 +85,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
+        with self.guard:
+            type(self).active -= 1
 
 
 def main():
@@ -88,7 +104,11 @@ def main():
             thread.join()
         assert not Handler.errors, Handler.errors
         assert result.returncode == 0, result.returncode
-        assert Handler.seen == ["getMe", "sendMessage", "sendDocument", "sendMediaGroup", "getChat", "badJson"], Handler.seen
+        assert Handler.seen[:6] == ["getMe", "sendMessage", "sendDocument", "sendMediaGroup", "getChat", "badJson"], Handler.seen
+        assert Handler.seen[6:] == ["getMe"] * 8, Handler.seen
+        assert len(set(Handler.peer_ports[:6])) == 1, "sequential calls should reuse their HTTP connection"
+        assert Handler.max_active == 2, "parallel HTTP calls must overlap and respect the configured pool bound"
+        assert len(Handler.ports) == 2, "the two pooled handles should reuse their connections"
 
 
 if __name__ == "__main__":

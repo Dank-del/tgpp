@@ -5,6 +5,9 @@
 #include <filesystem>
 #include <limits>
 #include <set>
+#include <condition_variable>
+#include <mutex>
+#include <chrono>
 
 namespace tgpp {
 namespace {
@@ -34,6 +37,37 @@ void checked(CURLcode result) {
 }
 } // namespace
 
+struct CurlTransport::Pool {
+    std::mutex mutex;
+    std::condition_variable available;
+    std::vector<CURL*> idle;
+    std::size_t created = 0, capacity;
+    long timeout;
+    Pool(std::size_t capacity, long timeout) : capacity(capacity), timeout(timeout) { idle.reserve(capacity); }
+    ~Pool() { for (auto* handle : idle) curl_easy_cleanup(handle); }
+    struct Release {
+        Pool* pool;
+        void operator()(CURL* handle) const noexcept {
+            // Options contain pointers into request-local data. Reset before
+            // returning the handle; live connections and caches are retained.
+            curl_easy_reset(handle);
+            { std::lock_guard<std::mutex> lock(pool->mutex); pool->idle.push_back(handle); }
+            pool->available.notify_one();
+        }
+    };
+    using Lease = std::unique_ptr<CURL, Release>;
+    Lease acquire() {
+        std::unique_lock<std::mutex> lock(mutex);
+        if (!available.wait_for(lock, std::chrono::seconds(timeout), [&] { return !idle.empty() || created < capacity; }))
+            throw std::runtime_error("HTTP connection pool wait timed out");
+        if (!idle.empty()) { auto* handle = idle.back(); idle.pop_back(); return Lease(handle, Release{this}); }
+        auto* handle = curl_easy_init();
+        if (!handle) throw std::runtime_error("could not allocate curl handle");
+        ++created;
+        return Lease(handle, Release{this});
+    }
+};
+
 CurlTransport::CurlTransport(std::string token, CurlOptions options)
     : token_(std::move(token)), options_(std::move(options)) {
     static GlobalCurl global;
@@ -44,13 +78,15 @@ CurlTransport::CurlTransport(std::string token, CurlOptions options)
         throw std::invalid_argument("base URL must use http:// or https://");
     if (options_.connect_timeout_seconds <= 0 || options_.timeout_seconds <= 0)
         throw std::invalid_argument("HTTP timeouts must be positive");
+    if (!options_.max_connections || options_.pool_timeout_seconds <= 0)
+        throw std::invalid_argument("HTTP pool capacity and timeout must be positive");
+    pool_ = std::make_shared<Pool>(options_.max_connections, options_.pool_timeout_seconds);
 }
 
 Json CurlTransport::perform(const Request& request) {
     if (!safe_name(request.method)) throw std::invalid_argument("invalid API method name");
     if (!request.parameters.is_object()) throw std::invalid_argument("request parameters must be an object");
-    std::unique_ptr<CURL, decltype(&curl_easy_cleanup)> handle(curl_easy_init(), curl_easy_cleanup);
-    if (!handle) throw std::runtime_error("could not allocate curl handle");
+    auto handle = pool_->acquire();
     std::string response;
     const auto url = options_.base_url + "/bot" + token_ + "/" + request.method;
     checked(curl_easy_setopt(handle.get(), CURLOPT_URL, url.c_str()));

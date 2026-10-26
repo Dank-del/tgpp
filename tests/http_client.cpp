@@ -1,5 +1,6 @@
 #include <tgpp/tgpp.hpp>
 #include <iostream>
+#include <future>
 
 using namespace tgpp;
 void require(bool condition) { if (!condition) throw std::runtime_error("HTTP integration assertion failed"); }
@@ -9,6 +10,7 @@ int main(int argc, char** argv) {
     try {
         CurlOptions config{};
         config.base_url = argv[1];
+        config.max_connections = 2;
         Bot bot(std::make_shared<CurlTransport>("123:test_token", config));
         require(bot.get_me().id == 123);
         SendMessageRequest text{};
@@ -38,6 +40,9 @@ int main(int argc, char** argv) {
         catch (const ApiError& error) { require(error.code == 429 && error.retry_after == 7); }
         try { bot.call(Request{"badJson"}); return 4; }
         catch (const std::runtime_error& error) { require(std::string(error.what()).find("invalid JSON") != std::string::npos); }
+        std::vector<std::future<User>> parallel;
+        for (int i = 0; i < 8; ++i) parallel.push_back(std::async(std::launch::async, [&] { return bot.get_me(); }));
+        for (auto& result : parallel) require(result.get().id == 123);
         std::cout << "Local HTTP JSON, multipart, nested attachments, and errors passed\n";
     } catch (const std::exception& error) {
         std::cerr << error.what() << '\n'; return 1;

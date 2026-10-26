@@ -1,5 +1,7 @@
 # tgpp
 
+Current version: **0.0.1-rc1**.
+
 A generated C++17 client for the Telegram Bot API, using the same
 [JSON specification](https://github.com/PaulSonOfLars/telegram-bot-api-spec)
 as [gotgbot](https://github.com/PaulSonOfLars/gotgbot).
@@ -12,7 +14,9 @@ checked in. Consumers need no Python or generator at build time.
 
 The `tgpp::ext` framework adds class-based commands, feature modules, nested
 routers, middleware, lifecycle hooks, centralized error handling, and long
-polling. Link `tgpp::ext` and include `<tgpp/ext/ext.hpp>`.
+polling. `ConcurrentApplication` provides bounded worker queues with ordering
+within each chat; the HTTP transport pools reusable curl handles and connections.
+Link `tgpp::ext` and include `<tgpp/ext/ext.hpp>`.
 
 Use one feature folder per capability, with small handler classes calling
 injected services and repository interfaces. The runnable
@@ -187,9 +191,17 @@ mock the network. It returns the full Telegram JSON envelope. `make_request`
 overloads expose generated parameters and extracted uploads for inspection.
 
 The curl transport keeps TLS verification enabled, disables redirects, uses
-bounded timeouts, and creates an easy handle per request. Set `CurlOptions`
+bounded timeouts, and leases reusable handles from a bounded pool. Set `CurlOptions`
 to configure the API base URL and timeouts; the HTTP timeout must exceed the
-long polling timeout. It supports file paths, not streaming upload callbacks.
+long polling timeout. `max_connections` and `pool_timeout_seconds` control
+HTTP concurrency. It supports file paths, not streaming upload callbacks.
+
+For concurrent polling, see [examples/concurrent.cpp](examples/concurrent.cpp)
+and the [concurrency diagrams and contracts](docs/architecture.md#concurrent-applications).
+Each worker gets its own application and handlers. Shared services must support
+concurrent access. Polling advances only a successful prefix of completed updates.
+See the [benchmark workload and measured results](bench/README.md) for a
+reproducible comparison of one and four application workers.
 
 ## Generation and updates
 
