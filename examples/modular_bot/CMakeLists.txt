@@ -18,7 +18,7 @@ if(TGPP_BUILD_EXAMPLES AND TGPP_WITH_CURL)
     target_link_libraries(modular_bot PRIVATE modular_bot_features)
 endif()
 
-if(BUILD_TESTING)
+if(TGPP_BUILD_TESTS)
     add_executable(modular_bot_tests tests/test_tasks.cpp)
     target_link_libraries(modular_bot_tests PRIVATE modular_bot_features)
     add_test(NAME modular_bot COMMAND modular_bot_tests)

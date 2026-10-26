@@ -14,6 +14,8 @@ First release candidate.
   request support.
 - Modular, concurrent, and public showcase bot examples; 33 live message demos.
 - Architecture diagrams, reproducible dispatch benchmarks, and GCC/Clang CI.
+- Direct GitHub `FetchContent` integration with public CMake targets, isolated
+  test options, and a standalone consumer example.
 
 The canonical version is stored in `VERSION`. `TGPP_VERSION` retains the full
 prerelease string; CMake's numeric `PROJECT_VERSION` is `0.0.1`.

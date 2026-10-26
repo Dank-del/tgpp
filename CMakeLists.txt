@@ -5,7 +5,13 @@ project(tgpp VERSION ${TGPP_VERSION_CORE} LANGUAGES CXX)
 message(STATUS "tgpp ${TGPP_VERSION}")
 
 include(FetchContent)
-include(CTest)
+if(PROJECT_IS_TOP_LEVEL)
+    include(CTest)
+    set(TGPP_TESTS_DEFAULT "${BUILD_TESTING}")
+else()
+    set(TGPP_TESTS_DEFAULT OFF)
+endif()
+option(TGPP_BUILD_TESTS "Build tgpp's tests" "${TGPP_TESTS_DEFAULT}")
 option(TGPP_WITH_CURL "Build the libcurl HTTP transport" ON)
 option(TGPP_BUILD_EXAMPLES "Build the bot examples" OFF)
 option(TGPP_BUILD_BENCHMARKS "Build dispatch throughput benchmarks" OFF)
@@ -16,7 +22,7 @@ if(NOT nlohmann_json_FOUND)
         URL https://codeload.github.com/nlohmann/json/tar.gz/refs/tags/v3.12.0
         URL_HASH SHA256=4b92eb0c06d10683f7447ce9406cb97cd4b453be18d7279320f7b2f025c10187
         DOWNLOAD_EXTRACT_TIMESTAMP TRUE)
-    set(JSON_BuildTests OFF CACHE BOOL "" FORCE)
+    set(JSON_BuildTests OFF)
     FetchContent_MakeAvailable(nlohmann_json)
 endif()
 
@@ -49,8 +55,10 @@ if(TGPP_WITH_CURL)
     target_compile_definitions(tgpp PUBLIC TGPP_WITH_CURL=1)
 endif()
 
-find_package(Python3 COMPONENTS Interpreter)
-if(Python3_FOUND)
+if(PROJECT_IS_TOP_LEVEL OR TGPP_BUILD_TESTS)
+    find_package(Python3 COMPONENTS Interpreter)
+endif()
+if(PROJECT_IS_TOP_LEVEL AND Python3_FOUND)
     add_custom_target(generate
         COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tools/generate.py"
         WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -59,7 +67,15 @@ if(Python3_FOUND)
         WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 endif()
 
-if(BUILD_TESTING)
+if(TGPP_BUILD_TESTS)
+    add_test(NAME cmake_consumer COMMAND "${CMAKE_COMMAND}"
+        -S "${CMAKE_CURRENT_SOURCE_DIR}/tests/cmake_consumer"
+        -B "${CMAKE_CURRENT_BINARY_DIR}/consumer-test"
+        "-DFETCHCONTENT_SOURCE_DIR_TGPP=${CMAKE_CURRENT_SOURCE_DIR}"
+        "-DFETCHCONTENT_SOURCE_DIR_NLOHMANN_JSON=${nlohmann_json_SOURCE_DIR}"
+        "-Dnlohmann_json_DIR=${nlohmann_json_DIR}"
+        "-DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}"
+        "-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}")
     add_executable(tgpp_concurrency_tests tests/test_concurrent.cpp)
     target_link_libraries(tgpp_concurrency_tests PRIVATE tgpp::ext)
     add_test(NAME concurrency COMMAND tgpp_concurrency_tests)
@@ -99,7 +115,7 @@ if(TGPP_BUILD_EXAMPLES)
     target_link_libraries(concurrent_bot PRIVATE tgpp::ext)
 endif()
 
-if(TGPP_BUILD_EXAMPLES OR BUILD_TESTING)
+if(TGPP_BUILD_EXAMPLES OR TGPP_BUILD_TESTS)
     add_subdirectory(examples/modular_bot)
     add_subdirectory(examples/showcase_bot)
 endif()

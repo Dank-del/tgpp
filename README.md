@@ -65,12 +65,43 @@ The generated surface is large; two parallel compiler jobs keep memory use
 reasonable. For a custom transport without libcurl, configure with
 `-DTGPP_WITH_CURL=OFF` and leave examples disabled.
 
-Use from another CMake project:
+## Add to your CMake project
+
+Use CMake's [FetchContent](https://cmake.org/cmake/help/latest/module/FetchContent.html)
+to download tgpp directly from GitHub, pinned to a release:
+
+```cmake
+cmake_minimum_required(VERSION 3.24)
+project(my_bot LANGUAGES CXX)
+
+include(FetchContent)
+FetchContent_Declare(tgpp
+    GIT_REPOSITORY https://github.com/Dank-del/tgpp.git
+    GIT_TAG v0.0.1-rc1
+    GIT_SHALLOW TRUE)
+
+FetchContent_MakeAvailable(tgpp)
+
+add_executable(my_bot main.cpp)
+target_link_libraries(my_bot PRIVATE tgpp::ext)
+```
+
+`tgpp::ext` includes the generated client and the application framework.
+For only the API client, link `tgpp::tgpp`. CMake supplies the JSON dependency;
+libcurl development headers and libraries must be installed on your system.
+See the [standalone consumer example](examples/fetchcontent) for a complete
+project that builds and runs without a bot token.
+
+For a local checkout, use:
 
 ```cmake
 add_subdirectory(path/to/tgpp)
 target_link_libraries(my_bot PRIVATE tgpp::tgpp)
 ```
+
+Tests default off when tgpp is fetched as a dependency;
+`TGPP_BUILD_TESTS` controls them independently of the parent project's tests.
+Generator maintenance targets are defined only in standalone tgpp builds.
 
 ## Send a message
 
