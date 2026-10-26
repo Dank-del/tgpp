@@ -13,15 +13,18 @@ class Next {
         bool called = false;
         std::function<Result()> continuation;
     };
+
     std::shared_ptr<State> state_;
+
     explicit Next(std::shared_ptr<State> state) : state_(std::move(state)) {}
     friend class Router;
-public:
+
+  public:
     Result operator()() const;
 };
 
 class Middleware {
-public:
+  public:
     virtual ~Middleware() = default;
     virtual Result handle(Context& context, Next next) = 0;
 };

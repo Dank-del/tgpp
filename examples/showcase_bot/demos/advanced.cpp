@@ -3,32 +3,63 @@
 namespace showcase {
 using namespace tgpp;
 using namespace std::chrono_literals;
+
 void add_advanced_demos(Catalog& catalog) {
-    catalog.add({"rich", "Rich message blocks", "latest API", [](DemoContext& ctx) {
-        InputRichBlockSectionHeading heading{}; heading.text.value = std::string("tgpp · structured rich message"); heading.size = 2;
-        InputRichBlockParagraph paragraph{}; paragraph.text.value = std::string("A typed heading and paragraph sent with the generated sendRichMessage API.");
-        InputRichBlock first{}; first.value = heading; InputRichBlock second{}; second.value = paragraph;
-        InputRichMessage rich{}; rich.blocks = std::vector<InputRichBlock>{first, second};
-        SendRichMessageRequest request{}; request.chat_id = ctx.chat(); request.rich_message = rich; request.disable_notification = true;
-        ctx.call([&] { return ctx.bot().send_rich_message(request); });
-    }});
+    catalog.add(
+        {"rich", "Rich message blocks", "latest API", [](DemoContext& ctx) {
+             InputRichBlockSectionHeading heading{};
+             heading.text.value = std::string("tgpp · structured rich message");
+             heading.size = 2;
+             InputRichBlockParagraph paragraph{};
+             paragraph.text.value = std::string(
+                 "A typed heading and paragraph sent with the generated sendRichMessage API.");
+             InputRichBlock first{};
+             first.value = heading;
+             InputRichBlock second{};
+             second.value = paragraph;
+             InputRichMessage rich{};
+             rich.blocks = std::vector<InputRichBlock>{first, second};
+             SendRichMessageRequest request{};
+             request.chat_id = ctx.chat();
+             request.rich_message = rich;
+             request.disable_notification = true;
+             ctx.call([&] { return ctx.bot().send_rich_message(request); });
+         }});
     catalog.add({"draft", "Streaming draft", "latest API", [](DemoContext& ctx) {
-        SendMessageDraftRequest draft{}; draft.chat_id = ctx.chat();
-        draft.draft_id = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
-        for (const auto* text : {"tgpp · streaming", "tgpp · streaming a partial reply…", "tgpp · streaming a partial reply… complete!"}) {
-            draft.text = text; ctx.call([&] { return ctx.bot().send_message_draft(draft); }); ctx.pause(500ms);
-        }
-        ctx.text("tgpp · streaming draft complete\nThe preview was ephemeral; this is the persisted final message.");
-    }});
+                     SendMessageDraftRequest draft{};
+                     draft.chat_id = ctx.chat();
+                     draft.draft_id = std::chrono::duration_cast<std::chrono::microseconds>(
+                                          std::chrono::steady_clock::now().time_since_epoch())
+                                          .count();
+                     for (const auto* text : {"tgpp · streaming",
+                                              "tgpp · streaming a partial reply…",
+                                              "tgpp · streaming a partial reply… complete!"}) {
+                         draft.text = text;
+                         ctx.call([&] { return ctx.bot().send_message_draft(draft); });
+                         ctx.pause(500ms);
+                     }
+                     ctx.text("tgpp · streaming draft complete\nThe preview was ephemeral; this is "
+                              "the persisted final message.");
+                 }});
     catalog.add({"styled_buttons", "Styled buttons", "latest API", [](DemoContext& ctx) {
-        auto primary = button("Primary", "show:alert"); primary.style = "primary";
-        auto success = button("Success", "show:alert"); success.style = "success";
-        auto danger = button("Danger", "show:alert"); danger.style = "danger";
-        auto disabled = InlineKeyboardButton{}; disabled.text = "Disabled"; disabled.disabled = DisabledButton{};
-        InlineKeyboardMarkup keyboard{}; keyboard.inline_keyboard = {{primary, success, danger}, {disabled}};
-        SendMessageRequest request{}; request.chat_id = ctx.chat(); request.text = "tgpp · styled and disabled inline buttons\nRendering depends on your Telegram client version.";
-        request.reply_markup = keyboard; request.disable_notification = true;
-        ctx.call([&] { return ctx.bot().send_message(request); });
-    }});
+                     auto primary = button("Primary", "show:alert");
+                     primary.style = "primary";
+                     auto success = button("Success", "show:alert");
+                     success.style = "success";
+                     auto danger = button("Danger", "show:alert");
+                     danger.style = "danger";
+                     auto disabled = InlineKeyboardButton{};
+                     disabled.text = "Disabled";
+                     disabled.disabled = DisabledButton{};
+                     InlineKeyboardMarkup keyboard{};
+                     keyboard.inline_keyboard = {{primary, success, danger}, {disabled}};
+                     SendMessageRequest request{};
+                     request.chat_id = ctx.chat();
+                     request.text = "tgpp · styled and disabled inline buttons\nRendering depends "
+                                    "on your Telegram client version.";
+                     request.reply_markup = keyboard;
+                     request.disable_notification = true;
+                     ctx.call([&] { return ctx.bot().send_message(request); });
+                 }});
 }
 } // namespace showcase

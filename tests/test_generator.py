@@ -19,7 +19,8 @@ class GeneratorTests(unittest.TestCase):
     def test_discriminator_is_a_single_literal(self):
         def field(description):
             return {"types": ["String"], "description": description}
-        self.assertEqual(generate.literal(field('Type of the media, must be photo')), "photo")
+
+        self.assertEqual(generate.literal(field("Type of the media, must be photo")), "photo")
         self.assertEqual(generate.literal(field('Type, always "emoji"')), "emoji")
         self.assertIsNone(generate.literal(field('Can be "one" or "two"')))
 
@@ -36,8 +37,10 @@ class GeneratorTests(unittest.TestCase):
 
     def test_mixed_array_elements_are_representable(self):
         generator = generate.Generator({"types": {}, "methods": {}}, "test")
-        self.assertEqual(generator.type(["Array of String", "Array of Integer"]),
-                         "std::vector<std::variant<std::string, std::int64_t>>")
+        self.assertEqual(
+            generator.type(["Array of String", "Array of Integer"]),
+            "std::vector<std::variant<std::string, std::int64_t>>",
+        )
 
 
 if __name__ == "__main__":

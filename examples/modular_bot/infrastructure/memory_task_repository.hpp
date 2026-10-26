@@ -7,7 +7,8 @@ namespace example {
 class MemoryTaskRepository final : public tasks::TaskRepository {
     std::unordered_map<std::int64_t, std::vector<tasks::Task>> tasks_;
     std::int64_t next_id_ = 1;
-public:
+
+  public:
     tasks::Task add(std::int64_t user_id, std::string title) override;
     std::vector<tasks::Task> list(std::int64_t user_id) const override;
 };

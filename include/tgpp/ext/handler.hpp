@@ -8,10 +8,15 @@ using Callback = std::function<void(Context&)>;
 
 class Handler {
     std::string name_;
-public:
+
+  public:
     explicit Handler(std::string name);
     virtual ~Handler() = default;
-    std::string_view name() const noexcept { return name_; }
+
+    std::string_view name() const noexcept {
+        return name_;
+    }
+
     virtual bool matches(const Context& context) const = 0;
     virtual void handle(Context& context) = 0;
 };
@@ -19,14 +24,16 @@ public:
 // Derive and override handle() for a class per command.
 class CommandHandler : public Handler {
     std::string command_;
-public:
+
+  public:
     explicit CommandHandler(std::string command);
     bool matches(const Context& context) const override;
 };
 
 class CallbackQueryHandler : public Handler {
     std::string prefix_;
-public:
+
+  public:
     explicit CallbackQueryHandler(std::string prefix);
     bool matches(const Context& context) const override;
 };
@@ -34,7 +41,8 @@ public:
 class FunctionHandler final : public Handler {
     Filter filter_;
     Callback callback_;
-public:
+
+  public:
     FunctionHandler(std::string name, Filter filter, Callback callback);
     bool matches(const Context& context) const override;
     void handle(Context& context) override;

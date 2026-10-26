@@ -1,39 +1,56 @@
-#include <tgpp/curl_transport.hpp>
-#include <curl/curl.h>
 #include <algorithm>
 #include <cctype>
+#include <chrono>
+#include <condition_variable>
+#include <curl/curl.h>
 #include <filesystem>
 #include <limits>
-#include <set>
-#include <condition_variable>
 #include <mutex>
-#include <chrono>
+#include <set>
+#include <tgpp/curl_transport.hpp>
 
 namespace tgpp {
 namespace {
 struct GlobalCurl {
     GlobalCurl() {
-        if (curl_global_init(CURL_GLOBAL_DEFAULT) != CURLE_OK)
+        if (curl_global_init(CURL_GLOBAL_DEFAULT) != CURLE_OK) {
             throw std::runtime_error("libcurl initialization failed");
+        }
     }
-    ~GlobalCurl() { curl_global_cleanup(); }
+
+    ~GlobalCurl() {
+        curl_global_cleanup();
+    }
 };
+
 bool safe_name(const std::string& value) {
     return !value.empty() && std::all_of(value.begin(), value.end(), [](unsigned char c) {
         return std::isalnum(c) || c == '_' || c == '-';
     });
 }
+
 std::size_t write_body(char* data, std::size_t size, std::size_t count, void* target) noexcept {
-    if (size && count > std::numeric_limits<std::size_t>::max() / size) return 0;
+    if (size && count > std::numeric_limits<std::size_t>::max() / size) {
+        return 0;
+    }
     const auto length = size * count;
     auto& body = *static_cast<std::string*>(target);
-    if (length > 64 * 1024 * 1024 - body.size()) return 0;
-    try { body.append(data, length); } catch (...) { return 0; }
+    if (length > 64 * 1024 * 1024 - body.size()) {
+        return 0;
+    }
+    try {
+        body.append(data, length);
+    } catch (...) {
+        return 0;
+    }
     return length;
 }
+
 void checked(CURLcode result) {
     // Never include the URL: it contains the bot token.
-    if (result != CURLE_OK) throw std::runtime_error(std::string("HTTP transport: ") + curl_easy_strerror(result));
+    if (result != CURLE_OK) {
+        throw std::runtime_error(std::string("HTTP transport: ") + curl_easy_strerror(result));
+    }
 }
 } // namespace
 
@@ -43,26 +60,50 @@ struct CurlTransport::Pool {
     std::vector<CURL*> idle;
     std::size_t created = 0, capacity;
     long timeout;
-    Pool(std::size_t capacity, long timeout) : capacity(capacity), timeout(timeout) { idle.reserve(capacity); }
-    ~Pool() { for (auto* handle : idle) curl_easy_cleanup(handle); }
+
+    Pool(std::size_t capacity, long timeout) : capacity(capacity), timeout(timeout) {
+        idle.reserve(capacity);
+    }
+
+    ~Pool() {
+        for (auto* handle : idle) {
+            curl_easy_cleanup(handle);
+        }
+    }
+
     struct Release {
         Pool* pool;
+
         void operator()(CURL* handle) const noexcept {
             // Options contain pointers into request-local data. Reset before
             // returning the handle; live connections and caches are retained.
             curl_easy_reset(handle);
-            { std::lock_guard<std::mutex> lock(pool->mutex); pool->idle.push_back(handle); }
+            {
+                std::lock_guard<std::mutex> lock(pool->mutex);
+                pool->idle.push_back(handle);
+            }
             pool->available.notify_one();
         }
     };
+
     using Lease = std::unique_ptr<CURL, Release>;
+
     Lease acquire() {
         std::unique_lock<std::mutex> lock(mutex);
-        if (!available.wait_for(lock, std::chrono::seconds(timeout), [&] { return !idle.empty() || created < capacity; }))
+        if (!available.wait_for(lock, std::chrono::seconds(timeout), [&] {
+                return !idle.empty() || created < capacity;
+            })) {
             throw std::runtime_error("HTTP connection pool wait timed out");
-        if (!idle.empty()) { auto* handle = idle.back(); idle.pop_back(); return Lease(handle, Release{this}); }
+        }
+        if (!idle.empty()) {
+            auto* handle = idle.back();
+            idle.pop_back();
+            return Lease(handle, Release{this});
+        }
         auto* handle = curl_easy_init();
-        if (!handle) throw std::runtime_error("could not allocate curl handle");
+        if (!handle) {
+            throw std::runtime_error("could not allocate curl handle");
+        }
         ++created;
         return Lease(handle, Release{this});
     }
@@ -71,64 +112,93 @@ struct CurlTransport::Pool {
 CurlTransport::CurlTransport(std::string token, CurlOptions options)
     : token_(std::move(token)), options_(std::move(options)) {
     static GlobalCurl global;
-    if (token_.empty() || token_.find_first_not_of("0123456789:abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-") != std::string::npos)
+    if (token_.empty() ||
+        token_.find_first_not_of(
+            "0123456789:abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-") !=
+            std::string::npos) {
         throw std::invalid_argument("invalid bot token characters");
-    while (!options_.base_url.empty() && options_.base_url.back() == '/') options_.base_url.pop_back();
-    if (options_.base_url.rfind("https://", 0) != 0 && options_.base_url.rfind("http://", 0) != 0)
+    }
+    while (!options_.base_url.empty() && options_.base_url.back() == '/') {
+        options_.base_url.pop_back();
+    }
+    if (options_.base_url.rfind("https://", 0) != 0 && options_.base_url.rfind("http://", 0) != 0) {
         throw std::invalid_argument("base URL must use http:// or https://");
-    if (options_.connect_timeout_seconds <= 0 || options_.timeout_seconds <= 0)
+    }
+    if (options_.connect_timeout_seconds <= 0 || options_.timeout_seconds <= 0) {
         throw std::invalid_argument("HTTP timeouts must be positive");
-    if (!options_.max_connections || options_.pool_timeout_seconds <= 0)
+    }
+    if (!options_.max_connections || options_.pool_timeout_seconds <= 0) {
         throw std::invalid_argument("HTTP pool capacity and timeout must be positive");
+    }
     pool_ = std::make_shared<Pool>(options_.max_connections, options_.pool_timeout_seconds);
 }
 
 Json CurlTransport::perform(const Request& request) {
-    if (!safe_name(request.method)) throw std::invalid_argument("invalid API method name");
-    if (!request.parameters.is_object()) throw std::invalid_argument("request parameters must be an object");
+    if (!safe_name(request.method)) {
+        throw std::invalid_argument("invalid API method name");
+    }
+    if (!request.parameters.is_object()) {
+        throw std::invalid_argument("request parameters must be an object");
+    }
     auto handle = pool_->acquire();
     std::string response;
     const auto url = options_.base_url + "/bot" + token_ + "/" + request.method;
     checked(curl_easy_setopt(handle.get(), CURLOPT_URL, url.c_str()));
     checked(curl_easy_setopt(handle.get(), CURLOPT_POST, 1L));
     checked(curl_easy_setopt(handle.get(), CURLOPT_NOSIGNAL, 1L));
-    checked(curl_easy_setopt(handle.get(), CURLOPT_CONNECTTIMEOUT, options_.connect_timeout_seconds));
+    checked(
+        curl_easy_setopt(handle.get(), CURLOPT_CONNECTTIMEOUT, options_.connect_timeout_seconds));
     checked(curl_easy_setopt(handle.get(), CURLOPT_TIMEOUT, options_.timeout_seconds));
     checked(curl_easy_setopt(handle.get(), CURLOPT_WRITEFUNCTION, write_body));
     checked(curl_easy_setopt(handle.get(), CURLOPT_WRITEDATA, &response));
     // Redirects stay disabled; TLS peer and hostname verification retain curl defaults.
     std::unique_ptr<curl_mime, decltype(&curl_mime_free)> mime(nullptr, curl_mime_free);
-    std::unique_ptr<curl_slist, decltype(&curl_slist_free_all)> headers(nullptr, curl_slist_free_all);
+    std::unique_ptr<curl_slist, decltype(&curl_slist_free_all)> headers(nullptr,
+                                                                        curl_slist_free_all);
     std::string body;
     if (request.files.empty()) {
         body = request.parameters.dump();
         headers.reset(curl_slist_append(nullptr, "Content-Type: application/json"));
-        if (!headers) throw std::bad_alloc();
+        if (!headers) {
+            throw std::bad_alloc();
+        }
         checked(curl_easy_setopt(handle.get(), CURLOPT_HTTPHEADER, headers.get()));
         checked(curl_easy_setopt(handle.get(), CURLOPT_POSTFIELDS, body.c_str()));
-        checked(curl_easy_setopt(handle.get(), CURLOPT_POSTFIELDSIZE_LARGE, static_cast<curl_off_t>(body.size())));
+        checked(curl_easy_setopt(
+            handle.get(), CURLOPT_POSTFIELDSIZE_LARGE, static_cast<curl_off_t>(body.size())));
     } else {
         mime.reset(curl_mime_init(handle.get()));
-        if (!mime) throw std::bad_alloc();
+        if (!mime) {
+            throw std::bad_alloc();
+        }
         std::set<std::string> names;
         for (auto it = request.parameters.begin(); it != request.parameters.end(); ++it) {
             names.insert(it.key());
             auto* part = curl_mime_addpart(mime.get());
-            if (!part) throw std::bad_alloc();
+            if (!part) {
+                throw std::bad_alloc();
+            }
             checked(curl_mime_name(part, it.key().c_str()));
             auto value = it->is_string() ? it->get<std::string>() : it->dump();
             checked(curl_mime_data(part, value.c_str(), value.size()));
         }
         for (const auto& attachment : request.files) {
-            if (!safe_name(attachment.name) || !names.insert(attachment.name).second)
+            if (!safe_name(attachment.name) || !names.insert(attachment.name).second) {
                 throw std::invalid_argument("invalid or duplicate attachment name");
-            if (attachment.file.path.empty()) throw std::invalid_argument("upload path must not be empty");
+            }
+            if (attachment.file.path.empty()) {
+                throw std::invalid_argument("upload path must not be empty");
+            }
             auto* part = curl_mime_addpart(mime.get());
-            if (!part) throw std::bad_alloc();
+            if (!part) {
+                throw std::bad_alloc();
+            }
             checked(curl_mime_name(part, attachment.name.c_str()));
             checked(curl_mime_filedata(part, attachment.file.path.c_str()));
-            const auto filename = attachment.file.filename.empty()
-                ? std::filesystem::path(attachment.file.path).filename().string() : attachment.file.filename;
+            const auto filename =
+                attachment.file.filename.empty()
+                    ? std::filesystem::path(attachment.file.path).filename().string()
+                    : attachment.file.filename;
             checked(curl_mime_filename(part, filename.c_str()));
             checked(curl_mime_type(part, attachment.file.content_type.c_str()));
         }
@@ -138,12 +208,17 @@ Json CurlTransport::perform(const Request& request) {
     long status = 0;
     checked(curl_easy_getinfo(handle.get(), CURLINFO_RESPONSE_CODE, &status));
     Json json;
-    try { json = Json::parse(response); }
-    catch (const Json::exception&) { throw std::runtime_error("HTTP " + std::to_string(status) + ": invalid JSON response"); }
+    try {
+        json = Json::parse(response);
+    } catch (const Json::exception&) {
+        throw std::runtime_error("HTTP " + std::to_string(status) + ": invalid JSON response");
+    }
     if (status < 200 || status >= 300) {
         // Telegram returns actionable JSON on 400/401/429. Preserve it for Client.
-        if (!json.is_object() || !json.contains("ok") || !json.at("ok").is_boolean() || json.at("ok").get<bool>())
+        if (!json.is_object() || !json.contains("ok") || !json.at("ok").is_boolean() ||
+            json.at("ok").get<bool>()) {
             throw std::runtime_error("HTTP " + std::to_string(status));
+        }
     }
     return json;
 }

@@ -1,16 +1,22 @@
-#include <tgpp/tgpp.hpp>
 #include <csignal>
 #include <cstdlib>
 #include <iostream>
+#include <tgpp/tgpp.hpp>
 
 namespace {
 volatile std::sig_atomic_t stopped = 0;
-void stop(int) { stopped = 1; }
+
+void stop(int) {
+    stopped = 1;
 }
+} // namespace
 
 int main() {
     const auto* token = std::getenv("TELEGRAM_BOT_TOKEN");
-    if (!token) { std::cerr << "Set TELEGRAM_BOT_TOKEN\n"; return 1; }
+    if (!token) {
+        std::cerr << "Set TELEGRAM_BOT_TOKEN\n";
+        return 1;
+    }
     std::signal(SIGINT, stop);
     std::signal(SIGTERM, stop);
     try {
@@ -31,6 +37,7 @@ int main() {
             }
         }
     } catch (const std::exception& error) {
-        std::cerr << error.what() << '\n'; return 1;
+        std::cerr << error.what() << '\n';
+        return 1;
     }
 }

@@ -1,4 +1,5 @@
 """Exercise the real curl transport without Telegram credentials or internet."""
+
 import email.parser
 import email.policy
 import http.server
@@ -43,8 +44,15 @@ class Handler(http.server.BaseHTTPRequestHandler):
             content_type = self.headers["Content-Type"]
             if content_type.startswith("multipart/form-data"):
                 message = email.parser.BytesParser(policy=email.policy.default).parsebytes(
-                    b"Content-Type: " + content_type.encode() + b"\r\nMIME-Version: 1.0\r\n\r\n" + raw)
-                parts = {part.get_param("name", header="content-disposition"): part for part in message.iter_parts()}
+                    b"Content-Type: "
+                    + content_type.encode()
+                    + b"\r\nMIME-Version: 1.0\r\n\r\n"
+                    + raw
+                )
+                parts = {
+                    part.get_param("name", header="content-disposition"): part
+                    for part in message.iter_parts()
+                }
                 assert parts["chat_id"].get_payload(decode=True) == b"42"
                 if method == "sendDocument":
                     assert parts["document"].get_payload(decode=True) == b"attach://upload_0"
@@ -52,8 +60,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
                     assert parts["upload_0"].get_payload(decode=True) == PAYLOAD
                 elif method == "sendMediaGroup":
                     media = json.loads(parts["media"].get_payload(decode=True))
-                    assert media == [{"type": "photo", "media": "attach://photo"},
-                                     {"type": "video", "media": "attach://video"}]
+                    assert media == [
+                        {"type": "photo", "media": "attach://photo"},
+                        {"type": "video", "media": "attach://video"},
+                    ]
                     assert parts["photo"].get_payload(decode=True) == PAYLOAD
                     assert parts["video"].get_payload(decode=True) == PAYLOAD
                 else:
@@ -64,7 +74,11 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 if method == "getMe":
                     assert parameters == {}
                 elif method == "sendMessage":
-                    assert parameters == {"chat_id": 42, "text": "Hello, 世界", "disable_notification": False}
+                    assert parameters == {
+                        "chat_id": 42,
+                        "text": "Hello, 世界",
+                        "disable_notification": False,
+                    }
             status = 200
             if method == "getMe":
                 result = {"id": 123, "is_bot": True, "first_name": "test"}
@@ -75,7 +89,12 @@ class Handler(http.server.BaseHTTPRequestHandler):
             response = {"ok": True, "result": result}
             if method == "getChat":
                 status = 429
-                response = {"ok": False, "error_code": 429, "description": "retry later", "parameters": {"retry_after": 7}}
+                response = {
+                    "ok": False,
+                    "error_code": 429,
+                    "description": "retry later",
+                    "parameters": {"retry_after": 7},
+                }
             body = b"not JSON" if method == "badJson" else json.dumps(response).encode()
         except Exception as error:
             self.errors.append(repr(error))
@@ -97,17 +116,30 @@ def main():
         thread = threading.Thread(target=server.serve_forever, daemon=True)
         thread.start()
         try:
-            result = subprocess.run([sys.argv[1], f"http://127.0.0.1:{server.server_port}", str(upload)], timeout=30)
+            result = subprocess.run(
+                [sys.argv[1], f"http://127.0.0.1:{server.server_port}", str(upload)], timeout=30
+            )
         finally:
             server.shutdown()
             server.server_close()
             thread.join()
         assert not Handler.errors, Handler.errors
         assert result.returncode == 0, result.returncode
-        assert Handler.seen[:6] == ["getMe", "sendMessage", "sendDocument", "sendMediaGroup", "getChat", "badJson"], Handler.seen
+        assert Handler.seen[:6] == [
+            "getMe",
+            "sendMessage",
+            "sendDocument",
+            "sendMediaGroup",
+            "getChat",
+            "badJson",
+        ], Handler.seen
         assert Handler.seen[6:] == ["getMe"] * 8, Handler.seen
-        assert len(set(Handler.peer_ports[:6])) == 1, "sequential calls should reuse their HTTP connection"
-        assert Handler.max_active == 2, "parallel HTTP calls must overlap and respect the configured pool bound"
+        assert (
+            len(set(Handler.peer_ports[:6])) == 1
+        ), "sequential calls should reuse their HTTP connection"
+        assert (
+            Handler.max_active == 2
+        ), "parallel HTTP calls must overlap and respect the configured pool bound"
         assert len(Handler.ports) == 2, "the two pooled handles should reuse their connections"
 
 

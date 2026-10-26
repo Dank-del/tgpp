@@ -16,7 +16,8 @@ class CurlTransport final : public Transport {
     std::string token_;
     CurlOptions options_;
     std::shared_ptr<Pool> pool_;
-public:
+
+  public:
     explicit CurlTransport(std::string token, CurlOptions options = {});
     Json perform(const Request& request) override;
 };

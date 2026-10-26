@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 3.24)
 file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/VERSION" TGPP_VERSION LIMIT_COUNT 1)
 string(REGEX MATCH "^[0-9]+\\.[0-9]+\\.[0-9]+" TGPP_VERSION_CORE "${TGPP_VERSION}")
-project(tgpp VERSION ${TGPP_VERSION_CORE} LANGUAGES CXX)
+project(
+    tgpp
+    VERSION ${TGPP_VERSION_CORE}
+    LANGUAGES CXX
+)
 message(STATUS "tgpp ${TGPP_VERSION}")
 
 include(FetchContent)
@@ -18,10 +22,12 @@ option(TGPP_BUILD_BENCHMARKS "Build dispatch throughput benchmarks" OFF)
 
 find_package(nlohmann_json 3.11 QUIET)
 if(NOT nlohmann_json_FOUND)
-    FetchContent_Declare(nlohmann_json
+    FetchContent_Declare(
+        nlohmann_json
         URL https://codeload.github.com/nlohmann/json/tar.gz/refs/tags/v3.12.0
         URL_HASH SHA256=4b92eb0c06d10683f7447ce9406cb97cd4b453be18d7279320f7b2f025c10187
-        DOWNLOAD_EXTRACT_TIMESTAMP TRUE)
+        DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+    )
     set(JSON_BuildTests OFF)
     FetchContent_MakeAvailable(nlohmann_json)
 endif()
@@ -30,7 +36,12 @@ file(GLOB GENERATED_SOURCES CONFIGURE_DEPENDS src/generated/*.cpp)
 add_library(tgpp src/core.cpp ${GENERATED_SOURCES})
 add_library(tgpp::tgpp ALIAS tgpp)
 target_compile_features(tgpp PUBLIC cxx_std_17)
-set_target_properties(tgpp PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
+set_target_properties(
+    tgpp
+    PROPERTIES CXX_STANDARD 17
+               CXX_STANDARD_REQUIRED ON
+               CXX_EXTENSIONS OFF
+)
 target_include_directories(tgpp PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
 target_link_libraries(tgpp PUBLIC nlohmann_json::nlohmann_json)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
@@ -38,12 +49,18 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 endif()
 
 find_package(Threads REQUIRED)
-add_library(tgpp_ext
-    src/ext/context.cpp src/ext/handler.cpp src/ext/router.cpp
-    src/ext/application.cpp src/ext/polling.cpp src/ext/concurrent.cpp)
+add_library(
+    tgpp_ext src/ext/context.cpp src/ext/handler.cpp src/ext/router.cpp src/ext/application.cpp
+             src/ext/polling.cpp src/ext/concurrent.cpp
+)
 add_library(tgpp::ext ALIAS tgpp_ext)
 target_link_libraries(tgpp_ext PUBLIC tgpp::tgpp Threads::Threads)
-set_target_properties(tgpp_ext PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
+set_target_properties(
+    tgpp_ext
+    PROPERTIES CXX_STANDARD 17
+               CXX_STANDARD_REQUIRED ON
+               CXX_EXTENSIONS OFF
+)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(tgpp_ext PRIVATE -Wall -Wextra -Wpedantic)
 endif()
@@ -59,23 +76,39 @@ if(PROJECT_IS_TOP_LEVEL OR TGPP_BUILD_TESTS)
     find_package(Python3 COMPONENTS Interpreter)
 endif()
 if(PROJECT_IS_TOP_LEVEL AND Python3_FOUND)
-    add_custom_target(generate
+    add_custom_target(
+        format
+        COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tools/format.py"
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+    )
+    add_custom_target(
+        check-format
+        COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tools/format.py" --check
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+    )
+    add_custom_target(
+        generate
         COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tools/generate.py"
-        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
-    add_custom_target(check-generated
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+    )
+    add_custom_target(
+        check-generated
         COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tools/generate.py" --check
-        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+    )
 endif()
 
 if(TGPP_BUILD_TESTS)
-    add_test(NAME cmake_consumer COMMAND "${CMAKE_COMMAND}"
-        -S "${CMAKE_CURRENT_SOURCE_DIR}/tests/cmake_consumer"
-        -B "${CMAKE_CURRENT_BINARY_DIR}/consumer-test"
-        "-DFETCHCONTENT_SOURCE_DIR_TGPP=${CMAKE_CURRENT_SOURCE_DIR}"
-        "-DFETCHCONTENT_SOURCE_DIR_NLOHMANN_JSON=${nlohmann_json_SOURCE_DIR}"
-        "-Dnlohmann_json_DIR=${nlohmann_json_DIR}"
-        "-DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}"
-        "-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}")
+    add_test(
+        NAME cmake_consumer
+        COMMAND
+            "${CMAKE_COMMAND}" -S "${CMAKE_CURRENT_SOURCE_DIR}/tests/cmake_consumer" -B
+            "${CMAKE_CURRENT_BINARY_DIR}/consumer-test"
+            "-DFETCHCONTENT_SOURCE_DIR_TGPP=${CMAKE_CURRENT_SOURCE_DIR}"
+            "-DFETCHCONTENT_SOURCE_DIR_NLOHMANN_JSON=${nlohmann_json_SOURCE_DIR}"
+            "-Dnlohmann_json_DIR=${nlohmann_json_DIR}" "-DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}"
+            "-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
+    )
     add_executable(tgpp_concurrency_tests tests/test_concurrent.cpp)
     target_link_libraries(tgpp_concurrency_tests PRIVATE tgpp::ext)
     add_test(NAME concurrency COMMAND tgpp_concurrency_tests)
@@ -87,13 +120,21 @@ if(TGPP_BUILD_TESTS)
     target_link_libraries(tgpp_tests PRIVATE tgpp)
     add_test(NAME api COMMAND tgpp_tests)
     if(Python3_FOUND)
-        add_test(NAME generated COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tools/generate.py" --check)
-        add_test(NAME generator COMMAND "${Python3_EXECUTABLE}" -m unittest discover -s tests -p test_generator.py)
+        add_test(NAME generated COMMAND "${Python3_EXECUTABLE}"
+                                        "${CMAKE_CURRENT_SOURCE_DIR}/tools/generate.py" --check
+        )
+        add_test(NAME generator COMMAND "${Python3_EXECUTABLE}" -m unittest discover -s tests -p
+                                        test_generator.py
+        )
         set_tests_properties(generator PROPERTIES WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
         if(TGPP_WITH_CURL)
             add_executable(tgpp_http_test tests/http_client.cpp)
             target_link_libraries(tgpp_http_test PRIVATE tgpp Threads::Threads)
-            add_test(NAME http COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_http.py" "$<TARGET_FILE:tgpp_http_test>")
+            add_test(
+                NAME http
+                COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_http.py"
+                        "$<TARGET_FILE:tgpp_http_test>"
+            )
         endif()
     endif()
 endif()

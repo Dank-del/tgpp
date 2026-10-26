@@ -26,8 +26,11 @@ class Service {
     void wait(std::chrono::milliseconds duration);
     void record(tgpp::Json result);
     void show_report(DemoContext& context);
-public:
-    Service(const tgpp::Bot& bot, std::int64_t chat, std::filesystem::path assets,
+
+  public:
+    Service(const tgpp::Bot& bot,
+            std::int64_t chat,
+            std::filesystem::path assets,
             std::filesystem::path report_path);
     ~Service();
     void start();
@@ -35,8 +38,15 @@ public:
     bool enqueue(const std::string& job);
     void cancel();
     bool idle() const;
-    bool knows(const std::string& id) const { return catalog_.find(id) != nullptr; }
-    const Catalog& catalog() const noexcept { return catalog_; }
+
+    bool knows(const std::string& id) const {
+        return catalog_.find(id) != nullptr;
+    }
+
+    const Catalog& catalog() const noexcept {
+        return catalog_;
+    }
+
     tgpp::Json report() const;
 };
 
@@ -49,9 +59,12 @@ class Sessions {
     std::unordered_map<std::int64_t, std::shared_ptr<Service>> services_;
     bool started_ = false;
     bool stopped_ = false;
-public:
-    Sessions(const tgpp::Bot& bot, std::filesystem::path assets,
-             std::filesystem::path reports, std::size_t capacity = 8);
+
+  public:
+    Sessions(const tgpp::Bot& bot,
+             std::filesystem::path assets,
+             std::filesystem::path reports,
+             std::size_t capacity = 8);
     ~Sessions();
     void start();
     void stop() noexcept;

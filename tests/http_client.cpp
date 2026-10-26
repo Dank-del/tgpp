@@ -1,12 +1,19 @@
-#include <tgpp/tgpp.hpp>
-#include <iostream>
 #include <future>
+#include <iostream>
+#include <tgpp/tgpp.hpp>
 
 using namespace tgpp;
-void require(bool condition) { if (!condition) throw std::runtime_error("HTTP integration assertion failed"); }
+
+void require(bool condition) {
+    if (!condition) {
+        throw std::runtime_error("HTTP integration assertion failed");
+    }
+}
 
 int main(int argc, char** argv) {
-    if (argc != 3) return 2;
+    if (argc != 3) {
+        return 2;
+    }
     try {
         CurlOptions config{};
         config.base_url = argv[1];
@@ -31,20 +38,35 @@ int main(int argc, char** argv) {
         SendMediaGroupRequest album{};
         album.chat_id = std::int64_t(42);
         album.media = {photo, video};
-        require(bot.send_media_group(album, {{"photo", InputFile{argv[2], "photo.bin"}},
-                                            {"video", InputFile{argv[2], "video.bin"}}}).size() == 2);
+        require(bot.send_media_group(album,
+                                     {{"photo", InputFile{argv[2], "photo.bin"}},
+                                      {"video", InputFile{argv[2], "video.bin"}}})
+                    .size() == 2);
 
         GetChatRequest chat{};
         chat.chat_id = std::int64_t(42);
-        try { bot.get_chat(chat); return 3; }
-        catch (const ApiError& error) { require(error.code == 429 && error.retry_after == 7); }
-        try { bot.call(Request{"badJson"}); return 4; }
-        catch (const std::runtime_error& error) { require(std::string(error.what()).find("invalid JSON") != std::string::npos); }
+        try {
+            bot.get_chat(chat);
+            return 3;
+        } catch (const ApiError& error) {
+            require(error.code == 429 && error.retry_after == 7);
+        }
+        try {
+            bot.call(Request{"badJson"});
+            return 4;
+        } catch (const std::runtime_error& error) {
+            require(std::string(error.what()).find("invalid JSON") != std::string::npos);
+        }
         std::vector<std::future<User>> parallel;
-        for (int i = 0; i < 8; ++i) parallel.push_back(std::async(std::launch::async, [&] { return bot.get_me(); }));
-        for (auto& result : parallel) require(result.get().id == 123);
+        for (int i = 0; i < 8; ++i) {
+            parallel.push_back(std::async(std::launch::async, [&] { return bot.get_me(); }));
+        }
+        for (auto& result : parallel) {
+            require(result.get().id == 123);
+        }
         std::cout << "Local HTTP JSON, multipart, nested attachments, and errors passed\n";
     } catch (const std::exception& error) {
-        std::cerr << error.what() << '\n'; return 1;
+        std::cerr << error.what() << '\n';
+        return 1;
     }
 }

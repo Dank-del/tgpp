@@ -1,11 +1,13 @@
-#include <tgpp/tgpp.hpp>
-#include <tgpp/ext/ext.hpp>
 #include <iostream>
+#include <tgpp/ext/ext.hpp>
+#include <tgpp/tgpp.hpp>
 
 class OfflineTransport final : public tgpp::Transport {
-public:
+  public:
     tgpp::Json perform(const tgpp::Request&) override {
-        return {{"ok", true}, {"result", {{"id", 123}, {"is_bot", true}, {"first_name", "FetchContent example"}}}};
+        return {
+            {"ok", true},
+            {"result", {{"id", 123}, {"is_bot", true}, {"first_name", "FetchContent example"}}}};
     }
 };
 

@@ -1,26 +1,31 @@
 #pragma once
 #include "service.hpp"
-#include <tgpp/ext/handler.hpp>
 #include <map>
+#include <tgpp/ext/handler.hpp>
 
 namespace showcase {
 class ShowcaseCommand final : public tgpp::ext::CommandHandler {
     std::shared_ptr<Sessions> sessions_;
     std::string action_;
-public:
+
+  public:
     ShowcaseCommand(std::string command, std::string action, std::shared_ptr<Sessions> sessions);
     void handle(tgpp::ext::Context& context) override;
 };
+
 class ShowcaseCallback final : public tgpp::ext::CallbackQueryHandler {
     std::shared_ptr<Sessions> sessions_;
     std::map<std::pair<std::int64_t, std::int64_t>, std::int64_t> counters_;
-public:
+
+  public:
     explicit ShowcaseCallback(std::shared_ptr<Sessions> sessions);
     void handle(tgpp::ext::Context& context) override;
 };
+
 class ReplyDemoHandler final : public tgpp::ext::Handler {
-public:
+  public:
     ReplyDemoHandler() : Handler("showcase_reply") {}
+
     bool matches(const tgpp::ext::Context& context) const override;
     void handle(tgpp::ext::Context& context) override;
 };

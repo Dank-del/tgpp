@@ -47,6 +47,8 @@ python3 tools/run_example.py showcase_bot --tour
 ## Build
 
 Requires CMake 3.24+, a C++17 compiler, and libcurl development headers (7.56+).
+For repository tests, first install and activate the development tools described
+under [Code formatting](#code-formatting).
 The JSON dependency is nlohmann/json: CMake uses an installed version (3.11+)
 or downloads the pinned, checksum-verified 3.12.0 release.
 
@@ -236,8 +238,17 @@ reproducible comparison of one and four application workers.
 
 ## Generation and updates
 
-Python 3.9+ is needed only to maintain generated code. No Python packages are
-required.
+Python 3.9+ and the pinned clang-format tool are needed only to maintain
+generated code. Install the development formatters in a virtual environment:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r tools/requirements-format.txt
+```
+
+The generator runs clang-format 19.1.7 before writing or checking its output,
+so regeneration preserves the same layout as the handwritten C++.
 
 ```bash
 python3 tools/generate.py                # offline, using spec/api.json
@@ -249,6 +260,22 @@ python3 tools/generate.py --update-spec  # fetch upstream pin and regenerate
 changes and rebuild/test before publishing an update. The generator fails on
 unknown schema types instead of substituting untyped JSON. Generation is
 deterministic; there are no timestamps in generated output.
+
+## Code formatting
+
+The repository uses four-space indentation and a 100-column limit. C++ uses
+the checked-in `.clang-format` style, Python uses Black, and CMake uses
+cmake-format. Formatter versions are pinned in `tools/requirements-format.txt`.
+`.editorconfig` supplies common editor settings.
+
+```bash
+python tools/format.py          # format C++, Python, and CMake
+python tools/format.py --check  # verify without writing
+```
+
+The standalone build also provides `format` and `check-format` targets.
+CI checks both formatting and reproducible generation. Library consumers do
+not need Python or formatters; the formatted generated sources are checked in.
 
 `tools/generate.py` contains the schema-to-C++ translation, dependency ordering,
 recursive component detection, and union handling. `include/tgpp/core.hpp`,

@@ -7,15 +7,77 @@ the upstream pin; --check verifies both its hash and all generated files.
 import argparse
 import hashlib
 import json
+import os
 import pathlib
 import re
+import shutil
+import subprocess
 import sys
 import urllib.request
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+CLANG_FORMAT_VERSION = "19.1.7"
 REPOSITORY = "https://github.com/PaulSonOfLars/telegram-bot-api-spec"
-KEYWORDS = set("alignas alignof and and_eq asm auto bitand bitor bool break case catch char char16_t char32_t class compl const constexpr const_cast continue decltype default delete do double dynamic_cast else enum explicit export extern false float for friend goto if inline int long mutable namespace new noexcept not not_eq nullptr operator or or_eq private protected public register reinterpret_cast return short signed sizeof static static_assert static_cast struct switch template this thread_local throw true try typedef typeid typename union unsigned using virtual void volatile wchar_t while xor xor_eq".split())
-PRIMITIVES = {"Integer": "std::int64_t", "Float": "double", "Boolean": "bool", "String": "std::string", "True": "bool"}
+KEYWORDS = set(
+    """
+    alignas alignof and and_eq asm auto bitand bitor bool break case catch char char16_t char32_t
+    class compl const constexpr const_cast continue decltype default delete do double dynamic_cast
+    else enum explicit export extern false float for friend goto if inline int long mutable
+    namespace new noexcept not not_eq nullptr operator or or_eq private protected public register
+    reinterpret_cast return short signed sizeof static static_assert static_cast struct switch
+    template this thread_local throw true try typedef typeid typename union unsigned using virtual
+    void volatile wchar_t while xor xor_eq
+    """.split()
+)
+PRIMITIVES = {
+    "Integer": "std::int64_t",
+    "Float": "double",
+    "Boolean": "bool",
+    "String": "std::string",
+    "True": "bool",
+}
+
+
+def clang_format():
+    executable = (
+        os.environ.get("TGPP_CLANG_FORMAT")
+        or shutil.which("clang-format")
+        or shutil.which("clang-format-19")
+    )
+    if not executable:
+        raise SystemExit(
+            "Install the formatter tools: python3 -m pip install -r tools/requirements-format.txt"
+        )
+    version = subprocess.check_output([executable, "--version"], text=True)
+    if not re.search(r"\bversion " + re.escape(CLANG_FORMAT_VERSION) + r"\b", version):
+        raise SystemExit(f"clang-format {CLANG_FORMAT_VERSION} is required for reproducible output")
+    return executable
+
+
+def format_cpp(source, name, executable):
+    # A few Unicode comments need more than one reflow pass in clang-format.
+    # Normalize to a fixed point so generation and a later format check agree.
+    for _ in range(8):
+        formatted = subprocess.run(
+            [
+                executable,
+                f"--style=file:{ROOT / '.clang-format'}",
+                f"--assume-filename={ROOT / name}",
+            ],
+            input=source,
+            text=True,
+            capture_output=True,
+            check=True,
+        ).stdout
+        if formatted == source:
+            return formatted
+        source = formatted
+    raise SystemExit(f"clang-format did not reach stable output for {name}")
+
+
+def format_generated(outputs):
+    executable = clang_format()
+    return {name: format_cpp(source, name, executable) for name, source in outputs.items()}
 
 
 def identifier(name):
@@ -37,7 +99,9 @@ def literal(field):
         return None
     match = re.search(r'(?:always|must be)\s+["“]([^"”]+)["”]', field["description"], re.I)
     if not match:
-        match = re.search(r"(?:always|must be)\s+([a-z][a-z0-9_]*)[.;]?$", field["description"], re.I)
+        match = re.search(
+            r"(?:always|must be)\s+([a-z][a-z0-9_]*)[.;]?$", field["description"], re.I
+        )
     return match.group(1) if match else None
 
 
@@ -70,6 +134,7 @@ def components(graph):
                 result[child] = node
                 if child == node:
                     break
+
     for node in sorted(graph):
         if node not in indices:
             visit(node)
@@ -95,6 +160,7 @@ class Generator:
         # types. They describe one array whose elements can have different types.
         if len(names) > 1 and all(name.startswith("Array of ") for name in names):
             return f"std::vector<{self.type([name[9:] for name in names], owner)}>"
+
         def one(name):
             if name.startswith("Array of "):
                 return f"std::vector<{one(name[9:])}>"
@@ -105,6 +171,7 @@ class Generator:
             if name not in self.types:
                 raise ValueError(f"unknown schema type: {name}")
             return f"Box<{name}>" if self.boxed(owner, name) else name
+
         mapped = list(dict.fromkeys(one(n) for n in names))
         return mapped[0] if len(mapped) == 1 else "std::variant<" + ", ".join(mapped) + ">"
 
@@ -124,6 +191,7 @@ class Generator:
 
     def order(self):
         seen, ordered = set(), []
+
         def visit(name):
             if name in seen:
                 return
@@ -132,67 +200,126 @@ class Generator:
                 if not self.boxed(name, child):
                     visit(child)
             ordered.append(name)
+
         for name in sorted(self.types):
             visit(name)
         return ordered
 
     def banner(self):
-        return f"// Generated by tools/generate.py. DO NOT EDIT.\n// {self.spec['version']}; spec SHA256: {self.digest}\n"
+        return (
+            "// Generated by tools/generate.py. DO NOT EDIT.\n"
+            f"// {self.spec['version']}; spec SHA256: {self.digest}\n"
+        )
 
     def object_codec(self, name, node, owner=None):
-        lines = [f"Json encode_object(const {name}& value, Request* request) {{", "    Json json = Json::object();"]
+        lines = [
+            f"Json encode_object(const {name}& value, Request* request) {{",
+            "    Json json = Json::object();",
+        ]
         if not node.get("fields"):
             lines.append("    (void)value; (void)request;")
         for field in node.get("fields", []):
             member = identifier(field["name"])
             tag = literal(field)
             if tag:
-                lines.append(f"    if (value.{member} != {cpp_string(tag)}) throw std::invalid_argument(\"invalid {name}.{member} discriminator\");")
-            lines.append(f"    detail::write_field(json, {cpp_string(field['name'])}, value.{member}, request);")
-        lines.extend(["    return json;", "}", f"void decode_object(const Json& json, {name}& value) {{",
-                      '    if (!json.is_object()) throw std::invalid_argument("expected Object");', f"    {name} parsed{{}};"])
+                lines.append(
+                    f"    if (value.{member} != {cpp_string(tag)}) "
+                    f'throw std::invalid_argument("invalid {name}.{member} discriminator");'
+                )
+            lines.append(
+                f"    detail::write_field(json, {cpp_string(field['name'])}, value.{member}, request);"
+            )
+        lines.extend(
+            [
+                "    return json;",
+                "}",
+                f"void decode_object(const Json& json, {name}& value) {{",
+                '    if (!json.is_object()) throw std::invalid_argument("expected Object");',
+                f"    {name} parsed{{}};",
+            ]
+        )
         for field in node.get("fields", []):
             member = identifier(field["name"])
             required = "required" if field["required"] else "optional"
-            lines.append(f"    detail::read_{required}(json, {cpp_string(field['name'])}, parsed.{member});")
+            lines.append(
+                f"    detail::read_{required}(json, {cpp_string(field['name'])}, parsed.{member});"
+            )
             tag = literal(field)
             if tag:
-                lines.append(f"    if (parsed.{member} != {cpp_string(tag)}) throw std::invalid_argument(\"invalid {name}.{member} discriminator\");")
+                lines.append(
+                    f"    if (parsed.{member} != {cpp_string(tag)}) "
+                    f'throw std::invalid_argument("invalid {name}.{member} discriminator");'
+                )
         lines.extend(["    value = std::move(parsed);", "}"])
         return "\n".join(lines)
 
     def union_codec(self, name, node):
         subs = node["subtypes"]
-        lines = [f"Json encode_object(const {name}& value, Request* request) {{",
-                 "    return to_json(value.value, request);", "}",
-                 f"void decode_object(const Json& json, {name}& value) {{"]
+        lines = [
+            f"Json encode_object(const {name}& value, Request* request) {{",
+            "    return to_json(value.value, request);",
+            "}",
+            f"void decode_object(const Json& json, {name}& value) {{",
+        ]
         if all(sub in self.types for sub in subs):
-            lines.append('    if (!json.is_object()) throw std::invalid_argument("expected union Object");')
+            lines.append(
+                '    if (!json.is_object()) throw std::invalid_argument("expected union Object");'
+            )
         # Telegram's accessible/inaccessible message union is selected by date.
         if name == "MaybeInaccessibleMessage":
             for index, sub in enumerate(subs):
-                condition = 'json.at("date") == 0' if sub == "InaccessibleMessage" else 'json.at("date") != 0'
+                condition = (
+                    'json.at("date") == 0'
+                    if sub == "InaccessibleMessage"
+                    else 'json.at("date") != 0'
+                )
                 kind = self.type([sub], name)
-                lines.append(f"    if ({condition}) {{ value.value.emplace<{index}>(from_json<{kind}>(json)); return; }}")
+                lines.append(
+                    f"    if ({condition}) {{ "
+                    f"value.value.emplace<{index}>(from_json<{kind}>(json)); return; }}"
+                )
         else:
-            tags = [{f["name"]: literal(f) for f in self.types.get(sub, {}).get("fields", []) if literal(f)} for sub in subs]
+            tags = [
+                {
+                    f["name"]: literal(f)
+                    for f in self.types.get(sub, {}).get("fields", [])
+                    if literal(f)
+                }
+                for sub in subs
+            ]
             common = set(tags[0]).intersection(*(set(tag) for tag in tags[1:]))
-            discriminator = next((key for key in sorted(common) if len({tag[key] for tag in tags}) == len(subs)), None)
+            discriminator = next(
+                (key for key in sorted(common) if len({tag[key] for tag in tags}) == len(subs)),
+                None,
+            )
             if discriminator:
                 for index, sub in enumerate(subs):
                     kind = self.type([sub], name)
-                    lines.append(f"    if (json.at({cpp_string(discriminator)}) == {cpp_string(tags[index][discriminator])}) {{ value.value.emplace<{index}>(from_json<{kind}>(json)); return; }}")
+                    key = cpp_string(discriminator)
+                    tag = cpp_string(tags[index][discriminator])
+                    lines.append(
+                        f"    if (json.at({key}) == {tag}) {{ "
+                        f"value.value.emplace<{index}>(from_json<{kind}>(json)); return; }}"
+                    )
             else:
                 # Structural unions have no common discriminator. Prefer the most
                 # specific shape (e.g. venue over location), then schema order.
                 def required_count(sub):
                     return sum(f["required"] for f in self.types.get(sub, {}).get("fields", []))
+
                 for sub in sorted(subs, key=lambda s: -required_count(s)):
                     index, kind = subs.index(sub), self.type([sub], name)
-                    lines.extend([f"    try {{ auto parsed = from_json<{kind}>(json); value.value.emplace<{index}>(std::move(parsed)); return; }}",
-                                  "    catch (const std::invalid_argument&) {}",
-                                  "    catch (const nlohmann::json::exception&) {}"])
-        lines.extend([f'    throw std::invalid_argument("unknown or invalid {name} alternative");', "}"])
+                    lines.extend(
+                        [
+                            f"    try {{ auto parsed = from_json<{kind}>(json); "
+                            f"value.value.emplace<{index}>(std::move(parsed)); return; }}",
+                            "    catch (const std::invalid_argument&) {}",
+                            "    catch (const nlohmann::json::exception&) {}",
+                        ]
+                    )
+        lines.extend(
+            [f'    throw std::invalid_argument("unknown or invalid {name} alternative");', "}"]
+        )
         return "\n".join(lines)
 
     def generate(self):
@@ -201,60 +328,133 @@ class Generator:
             header.append(f"struct {name};")
         for name in self.order():
             node = self.types[name]
-            header.extend([comment("\n".join(node.get("description", []))), f"/// @see {node['href']}", f"struct {name} {{"])
+            header.extend(
+                [
+                    comment("\n".join(node.get("description", []))),
+                    f"/// @see {node['href']}",
+                    f"struct {name} {{",
+                ]
+            )
             if node.get("subtypes"):
                 header.append(f"    {self.type(node['subtypes'], name)} value;")
             else:
                 header.extend(self.fields(node, name))
             header.append("};")
         for name in sorted(self.types):
-            header.extend([f"Json encode_object(const {name}& value, Request* request);",
-                           f"void decode_object(const Json& json, {name}& value);"])
-        header.extend([f'inline constexpr const char* api_version = {cpp_string(self.spec["version"])};', "} // namespace tgpp\n"])
+            header.extend(
+                [
+                    f"Json encode_object(const {name}& value, Request* request);",
+                    f"void decode_object(const Json& json, {name}& value);",
+                ]
+            )
+        header.extend(
+            [
+                f'inline constexpr const char* api_version = {cpp_string(self.spec["version"])};',
+                "} // namespace tgpp\n",
+            ]
+        )
         outputs = {"include/tgpp/types.hpp": "\n".join(header)}
         codecs = []
         for name in sorted(self.types):
             node = self.types[name]
-            codecs.append(self.union_codec(name, node) if node.get("subtypes") else self.object_codec(name, node, name))
+            codecs.append(
+                self.union_codec(name, node)
+                if node.get("subtypes")
+                else self.object_codec(name, node, name)
+            )
         for index in range(0, len(codecs), 25):
-            outputs[f"src/generated/types_{index // 25:02}.cpp"] = self.banner() + '#include <tgpp/types.hpp>\nnamespace tgpp {\n' + "\n".join(codecs[index:index + 25]) + "\n}\n"
+            outputs[f"src/generated/types_{index // 25:02}.cpp"] = (
+                self.banner()
+                + "#include <tgpp/types.hpp>\nnamespace tgpp {\n"
+                + "\n".join(codecs[index : index + 25])
+                + "\n}\n"
+            )
 
         methods = [self.banner(), '#pragma once\n#include "types.hpp"\n', "namespace tgpp {"]
         declarations, implementations = [], []
         for name, method in sorted(self.spec["methods"].items()):
             options = name[0].upper() + name[1:] + "Request"
             result = self.type(method["returns"])
-            methods.extend([comment("\n".join(method["description"])), f"/// @see {method['href']}", f"struct {options} {{"])
+            methods.extend(
+                [
+                    comment("\n".join(method["description"])),
+                    f"/// @see {method['href']}",
+                    f"struct {options} {{",
+                ]
+            )
             methods.extend(self.fields(method, required_first=True))
-            methods.extend(["};", f"Request make_request(const {options}& options, std::vector<Attachment> attachments = {{}});",
-                            f"Json encode_object(const {options}& value, Request* request);",
-                            f"void decode_object(const Json& json, {options}& value);"])
+            methods.extend(
+                [
+                    "};",
+                    f"Request make_request(const {options}& options, "
+                    "std::vector<Attachment> attachments = {});",
+                    f"Json encode_object(const {options}& value, Request* request);",
+                    f"void decode_object(const Json& json, {options}& value);",
+                ]
+            )
             default = " = {}" if not any(f["required"] for f in method.get("fields", [])) else ""
-            declarations.append(f"    {result} {snake(name)}(const {options}& options{default}, std::vector<Attachment> attachments = {{}}) const;")
-            implementations.append("\n".join([self.object_codec(options, method),
-                                    f"Request make_request(const {options}& options, std::vector<Attachment> attachments) {{",
-                                    f"    Request request; request.method = {cpp_string(name)}; request.files = std::move(attachments);",
-                                    "    request.parameters = to_json(options, &request);", "    return request;", "}",
-                                    f"{result} Bot::{snake(name)}(const {options}& options, std::vector<Attachment> attachments) const {{",
-                                    f"    return from_json<{result}>(call(make_request(options, std::move(attachments))));", "}"]))
-        methods.extend(["class Bot : public Client {", "public:", "    using Client::Client;", *declarations, "};", "} // namespace tgpp\n"])
+            declarations.append(
+                f"    {result} {snake(name)}(const {options}& options{default}, "
+                "std::vector<Attachment> attachments = {}) const;"
+            )
+            implementations.append(
+                "\n".join(
+                    [
+                        self.object_codec(options, method),
+                        f"Request make_request(const {options}& options, "
+                        "std::vector<Attachment> attachments) {",
+                        f"    Request request; request.method = {cpp_string(name)}; "
+                        "request.files = std::move(attachments);",
+                        "    request.parameters = to_json(options, &request);",
+                        "    return request;",
+                        "}",
+                        f"{result} Bot::{snake(name)}(const {options}& options, "
+                        "std::vector<Attachment> attachments) const {",
+                        f"    return from_json<{result}>("
+                        "call(make_request(options, std::move(attachments))));",
+                        "}",
+                    ]
+                )
+            )
+        methods.extend(
+            [
+                "class Bot : public Client {",
+                "public:",
+                "    using Client::Client;",
+                *declarations,
+                "};",
+                "} // namespace tgpp\n",
+            ]
+        )
         outputs["include/tgpp/methods.hpp"] = "\n".join(methods)
         # Method code is split by complete implementation blocks, not line count.
         block_size = 12
         for index in range(0, len(self.spec["methods"]), block_size):
             start, end = index, index + block_size
-            outputs[f"src/generated/methods_{index // block_size:02}.cpp"] = self.banner() + '#include <tgpp/methods.hpp>\nnamespace tgpp {\n' + "\n".join(implementations[start:end]) + "\n}\n"
+            outputs[f"src/generated/methods_{index // block_size:02}.cpp"] = (
+                self.banner()
+                + "#include <tgpp/methods.hpp>\nnamespace tgpp {\n"
+                + "\n".join(implementations[start:end])
+                + "\n}\n"
+            )
         return outputs
 
 
 def update_spec():
-    with urllib.request.urlopen("https://api.github.com/repos/PaulSonOfLars/telegram-bot-api-spec/commits/main", timeout=30) as response:
+    with urllib.request.urlopen(
+        "https://api.github.com/repos/PaulSonOfLars/telegram-bot-api-spec/commits/main", timeout=30
+    ) as response:
         commit = json.load(response)["sha"]
     prefix = f"https://raw.githubusercontent.com/PaulSonOfLars/telegram-bot-api-spec/{commit}"
     with urllib.request.urlopen(prefix + "/api.json", timeout=30) as response:
         data = response.read()
     spec = json.loads(data)
-    lock = {"repository": REPOSITORY, "commit": commit, "sha256": hashlib.sha256(data).hexdigest(), "version": spec["version"]}
+    lock = {
+        "repository": REPOSITORY,
+        "commit": commit,
+        "sha256": hashlib.sha256(data).hexdigest(),
+        "version": spec["version"],
+    }
     with urllib.request.urlopen(prefix + "/LICENSE", timeout=30) as response:
         license_text = response.read()
     (ROOT / "spec/api.json").write_bytes(data)
@@ -276,12 +476,19 @@ def main():
     if digest != lock["sha256"]:
         raise SystemExit("spec hash mismatch; restore the pinned spec or use --update-spec")
     spec = json.loads(data)
-    outputs = Generator(spec, digest).generate()
+    outputs = format_generated(Generator(spec, digest).generate())
     stale = set((ROOT / "src/generated").glob("*.cpp")) - {ROOT / name for name in outputs}
-    changed = [name for name, text in outputs.items() if not (ROOT / name).exists() or (ROOT / name).read_text() != text]
+    changed = [
+        name
+        for name, text in outputs.items()
+        if not (ROOT / name).exists() or (ROOT / name).read_text() != text
+    ]
     if args.check:
         if changed or stale:
-            raise SystemExit("generated files are stale: " + ", ".join(changed + [str(p.relative_to(ROOT)) for p in sorted(stale)]))
+            raise SystemExit(
+                "generated files are stale: "
+                + ", ".join(changed + [str(p.relative_to(ROOT)) for p in sorted(stale)])
+            )
     else:
         for path in stale:
             path.unlink()
@@ -290,7 +497,11 @@ def main():
             path = ROOT / name
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(text)
-    print(f"{'Verified' if args.check else 'Generated'} {len(spec['types'])} types (including InputFile), {len(spec['methods'])} methods; {spec['version']}")
+    action = "Verified" if args.check else "Generated"
+    print(
+        f"{action} {len(spec['types'])} types (including InputFile), "
+        f"{len(spec['methods'])} methods; {spec['version']}"
+    )
 
 
 if __name__ == "__main__":

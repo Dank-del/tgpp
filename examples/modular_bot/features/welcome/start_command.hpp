@@ -3,8 +3,9 @@
 
 namespace example {
 class StartCommand final : public tgpp::ext::CommandHandler {
-public:
+  public:
     StartCommand() : CommandHandler("start") {}
+
     void handle(tgpp::ext::Context& context) override;
 };
 } // namespace example

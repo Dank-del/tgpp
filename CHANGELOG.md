@@ -16,6 +16,8 @@ First release candidate.
 - Architecture diagrams, reproducible dispatch benchmarks, and GCC/Clang CI.
 - Direct GitHub `FetchContent` integration with public CMake targets, isolated
   test options, and a standalone consumer example.
+- Consistent C++, Python, and CMake formatting, pinned development tools,
+  formatter-aware code generation, and CI formatting checks.
 
 The canonical version is stored in `VERSION`. `TGPP_VERSION` retains the full
 prerelease string; CMake's numeric `PROJECT_VERSION` is `0.0.1`.

@@ -2,10 +2,12 @@ cmake_minimum_required(VERSION 3.24)
 project(tgpp_consumer LANGUAGES CXX)
 
 include(FetchContent)
-FetchContent_Declare(tgpp
+FetchContent_Declare(
+    tgpp
     GIT_REPOSITORY https://github.com/Dank-del/tgpp.git
     GIT_TAG v0.0.1-rc1
-    GIT_SHALLOW TRUE)
+    GIT_SHALLOW TRUE
+)
 
 FetchContent_MakeAvailable(tgpp)
 

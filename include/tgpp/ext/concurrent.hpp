@@ -16,23 +16,30 @@ struct ConcurrencyOptions {
 };
 
 class ConcurrentApplication {
-public:
+  public:
     using Factory = std::function<std::unique_ptr<Application>()>;
-private:
-    struct Job { Update update; std::promise<Result> promise; };
+
+  private:
+    struct Job {
+        Update update;
+        std::promise<Result> promise;
+    };
+
     struct Worker {
         std::unique_ptr<Application> application;
         std::deque<Job> queue;
         std::thread thread;
         std::condition_variable ready, space;
     };
+
     std::vector<std::unique_ptr<Worker>> workers_;
     ConcurrencyOptions options_;
     mutable std::mutex mutex_;
     bool closing_ = false;
     std::size_t lane(const Update& update) const;
     void work(Worker& worker) noexcept;
-public:
+
+  public:
     explicit ConcurrentApplication(Factory factory, ConcurrencyOptions options = {});
     ~ConcurrentApplication();
     ConcurrentApplication(const ConcurrentApplication&) = delete;

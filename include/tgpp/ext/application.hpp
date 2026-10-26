@@ -25,21 +25,33 @@ class Application {
     bool dispatching_ = false;
     bool stop_pending_ = false;
     void ensure_configurable() const;
-public:
+
+  public:
     explicit Application(std::shared_ptr<Transport> transport, ApplicationOptions options = {});
     ~Application();
     Application(const Application&) = delete;
     Application& operator=(const Application&) = delete;
-    const Bot& bot() const noexcept { return bot_; }
-    bool is_running() const noexcept { return state_ == State::started; }
+
+    const Bot& bot() const noexcept {
+        return bot_;
+    }
+
+    bool is_running() const noexcept {
+        return state_ == State::started;
+    }
+
     Router& router();
     void set_bot_username(std::string username);
     void on_error(ErrorHandler handler);
     void install(std::unique_ptr<Module> module);
+
     template <class T, class... Args> T& install(Args&&... args) {
         auto value = std::make_unique<T>(std::forward<Args>(args)...);
-        auto& result = *value; install(std::move(value)); return result;
+        auto& result = *value;
+        install(std::move(value));
+        return result;
     }
+
     void start();
     void stop() noexcept;
     Result process(const Update& update);
