@@ -1,0 +1,6 @@
+{
+  "library": "tgpp",
+  "language": "C++17",
+  "purpose": "Telegram document upload example",
+  "original_fixture": true
+}
