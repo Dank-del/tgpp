@@ -64,7 +64,7 @@ struct Fixture {
     explicit Fixture(WebhookOptions options)
         : server(io.get_executor(),
                  std::move(options),
-                 [this](Update update) -> Task<void> {
+                 [this](const Update& update) -> Task<void> {
                      if (update.update_id == 43) {
                          throw std::runtime_error("durable store unavailable");
                      }

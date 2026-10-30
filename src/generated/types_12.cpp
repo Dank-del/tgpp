@@ -18,7 +18,8 @@ void decode_object(const Json& json, RichBlockTableCell& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RichBlockTableCell parsed{};
+    detail::DecodeStorage<RichBlockTableCell> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "text", parsed.text);
     detail::read_optional(json, "is_header", parsed.is_header);
     detail::read_optional(json, "colspan", parsed.colspan);
@@ -42,7 +43,8 @@ void decode_object(const Json& json, RichBlockThinking& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RichBlockThinking parsed{};
+    detail::DecodeStorage<RichBlockThinking> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "thinking") {
         throw std::invalid_argument("invalid RichBlockThinking.type discriminator");
@@ -67,7 +69,8 @@ void decode_object(const Json& json, RichBlockVideo& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RichBlockVideo parsed{};
+    detail::DecodeStorage<RichBlockVideo> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "video") {
         throw std::invalid_argument("invalid RichBlockVideo.type discriminator");
@@ -93,7 +96,8 @@ void decode_object(const Json& json, RichBlockVoiceNote& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RichBlockVoiceNote parsed{};
+    detail::DecodeStorage<RichBlockVoiceNote> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "voice_note") {
         throw std::invalid_argument("invalid RichBlockVoiceNote.type discriminator");
@@ -114,7 +118,8 @@ void decode_object(const Json& json, RichMessage& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RichMessage parsed{};
+    detail::DecodeStorage<RichMessage> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "blocks", parsed.blocks);
     detail::read_optional(json, "is_rtl", parsed.is_rtl);
     value = std::move(parsed);
@@ -142,7 +147,8 @@ void decode_object(const Json& json, RichMessageButton& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RichMessageButton parsed{};
+    detail::DecodeStorage<RichMessageButton> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "text", parsed.text);
     detail::read_optional(json, "style", parsed.style);
     detail::read_optional(json, "url", parsed.url);
@@ -377,7 +383,8 @@ void decode_object(const Json& json, RichTextAnchor& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RichTextAnchor parsed{};
+    detail::DecodeStorage<RichTextAnchor> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "anchor") {
         throw std::invalid_argument("invalid RichTextAnchor.type discriminator");
@@ -401,7 +408,8 @@ void decode_object(const Json& json, RichTextAnchorLink& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RichTextAnchorLink parsed{};
+    detail::DecodeStorage<RichTextAnchorLink> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "anchor_link") {
         throw std::invalid_argument("invalid RichTextAnchorLink.type discriminator");
@@ -426,7 +434,8 @@ void decode_object(const Json& json, RichTextBankCardNumber& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RichTextBankCardNumber parsed{};
+    detail::DecodeStorage<RichTextBankCardNumber> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "bank_card_number") {
         throw std::invalid_argument("invalid RichTextBankCardNumber.type discriminator");
@@ -450,7 +459,8 @@ void decode_object(const Json& json, RichTextBold& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RichTextBold parsed{};
+    detail::DecodeStorage<RichTextBold> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "bold") {
         throw std::invalid_argument("invalid RichTextBold.type discriminator");
@@ -474,7 +484,8 @@ void decode_object(const Json& json, RichTextBotCommand& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RichTextBotCommand parsed{};
+    detail::DecodeStorage<RichTextBotCommand> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "bot_command") {
         throw std::invalid_argument("invalid RichTextBotCommand.type discriminator");
@@ -498,7 +509,8 @@ void decode_object(const Json& json, RichTextButton& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RichTextButton parsed{};
+    detail::DecodeStorage<RichTextButton> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "button") {
         throw std::invalid_argument("invalid RichTextButton.type discriminator");
@@ -522,7 +534,8 @@ void decode_object(const Json& json, RichTextCashtag& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RichTextCashtag parsed{};
+    detail::DecodeStorage<RichTextCashtag> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "cashtag") {
         throw std::invalid_argument("invalid RichTextCashtag.type discriminator");
@@ -546,7 +559,8 @@ void decode_object(const Json& json, RichTextCode& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RichTextCode parsed{};
+    detail::DecodeStorage<RichTextCode> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "code") {
         throw std::invalid_argument("invalid RichTextCode.type discriminator");
@@ -570,7 +584,8 @@ void decode_object(const Json& json, RichTextCustomEmoji& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RichTextCustomEmoji parsed{};
+    detail::DecodeStorage<RichTextCustomEmoji> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "custom_emoji") {
         throw std::invalid_argument("invalid RichTextCustomEmoji.type discriminator");
@@ -596,7 +611,8 @@ void decode_object(const Json& json, RichTextDateTime& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RichTextDateTime parsed{};
+    detail::DecodeStorage<RichTextDateTime> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "date_time") {
         throw std::invalid_argument("invalid RichTextDateTime.type discriminator");
@@ -622,7 +638,8 @@ void decode_object(const Json& json, RichTextEmailAddress& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RichTextEmailAddress parsed{};
+    detail::DecodeStorage<RichTextEmailAddress> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "email_address") {
         throw std::invalid_argument("invalid RichTextEmailAddress.type discriminator");
@@ -647,7 +664,8 @@ void decode_object(const Json& json, RichTextHashtag& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RichTextHashtag parsed{};
+    detail::DecodeStorage<RichTextHashtag> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "hashtag") {
         throw std::invalid_argument("invalid RichTextHashtag.type discriminator");
@@ -671,7 +689,8 @@ void decode_object(const Json& json, RichTextItalic& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RichTextItalic parsed{};
+    detail::DecodeStorage<RichTextItalic> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "italic") {
         throw std::invalid_argument("invalid RichTextItalic.type discriminator");
@@ -694,7 +713,8 @@ void decode_object(const Json& json, RichTextMarked& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RichTextMarked parsed{};
+    detail::DecodeStorage<RichTextMarked> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "marked") {
         throw std::invalid_argument("invalid RichTextMarked.type discriminator");
@@ -717,7 +737,8 @@ void decode_object(const Json& json, RichTextMathematicalExpression& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RichTextMathematicalExpression parsed{};
+    detail::DecodeStorage<RichTextMathematicalExpression> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "mathematical_expression") {
         throw std::invalid_argument("invalid RichTextMathematicalExpression.type discriminator");
@@ -741,7 +762,8 @@ void decode_object(const Json& json, RichTextMention& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RichTextMention parsed{};
+    detail::DecodeStorage<RichTextMention> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "mention") {
         throw std::invalid_argument("invalid RichTextMention.type discriminator");
@@ -766,7 +788,8 @@ void decode_object(const Json& json, RichTextPhoneNumber& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RichTextPhoneNumber parsed{};
+    detail::DecodeStorage<RichTextPhoneNumber> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "phone_number") {
         throw std::invalid_argument("invalid RichTextPhoneNumber.type discriminator");
@@ -791,7 +814,8 @@ void decode_object(const Json& json, RichTextReference& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RichTextReference parsed{};
+    detail::DecodeStorage<RichTextReference> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "reference") {
         throw std::invalid_argument("invalid RichTextReference.type discriminator");

@@ -172,15 +172,17 @@ struct WebhookServer::State : std::enable_shared_from_this<State> {
             deadline->cancel();
             status = parsed.error;
             if (parsed.complete && !invalid) {
-                std::optional<Update> update;
+                std::shared_ptr<Update> update;
                 try {
-                    update = from_json<Update>(Json::parse(parsed.body));
+                    auto decoded = std::make_shared<Update>();
+                    Codec<Update>::decode(Json::parse(parsed.body), *decoded);
+                    update = std::move(decoded);
                 } catch (const std::exception&) {
                 }
                 if (update && update->update_id >= 0) {
                     status = 503;
                     try {
-                        co_await self->receiver(std::move(*update));
+                        co_await self->receiver(*update);
                         status = 200;
                     } catch (const std::exception&) {
                     }
@@ -242,8 +244,8 @@ WebhookServer::WebhookServer(asio::any_io_executor e, WebhookOptions o, Receiver
     : state_(std::make_shared<State>(e, std::move(o), std::move(r))) {}
 
 WebhookServer::WebhookServer(asio::any_io_executor e, WebhookOptions o, AsyncApplication& app)
-    : WebhookServer(e, std::move(o), [&app](Update update) -> Task<void> {
-          co_await app.process(std::move(update));
+    : WebhookServer(e, std::move(o), [&app](const Update& update) -> Task<void> {
+          co_await app.process(update);
       }) {
     app.claim_ingestion("webhook");
 }

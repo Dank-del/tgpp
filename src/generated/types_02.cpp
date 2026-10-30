@@ -19,7 +19,8 @@ void decode_object(const Json& json, ChatJoinRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ChatJoinRequest parsed{};
+    detail::DecodeStorage<ChatJoinRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat", parsed.chat);
     detail::read_required(json, "from", parsed.from);
     detail::read_required(json, "user_chat_id", parsed.user_chat_id);
@@ -41,7 +42,8 @@ void decode_object(const Json& json, ChatLocation& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ChatLocation parsed{};
+    detail::DecodeStorage<ChatLocation> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "location", parsed.location);
     detail::read_required(json, "address", parsed.address);
     value = std::move(parsed);
@@ -118,7 +120,8 @@ void decode_object(const Json& json, ChatMemberAdministrator& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ChatMemberAdministrator parsed{};
+    detail::DecodeStorage<ChatMemberAdministrator> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "status", parsed.status);
     if (parsed.status != "administrator") {
         throw std::invalid_argument("invalid ChatMemberAdministrator.status discriminator");
@@ -162,7 +165,8 @@ void decode_object(const Json& json, ChatMemberBanned& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ChatMemberBanned parsed{};
+    detail::DecodeStorage<ChatMemberBanned> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "status", parsed.status);
     if (parsed.status != "kicked") {
         throw std::invalid_argument("invalid ChatMemberBanned.status discriminator");
@@ -186,7 +190,8 @@ void decode_object(const Json& json, ChatMemberLeft& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ChatMemberLeft parsed{};
+    detail::DecodeStorage<ChatMemberLeft> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "status", parsed.status);
     if (parsed.status != "left") {
         throw std::invalid_argument("invalid ChatMemberLeft.status discriminator");
@@ -211,7 +216,8 @@ void decode_object(const Json& json, ChatMemberMember& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ChatMemberMember parsed{};
+    detail::DecodeStorage<ChatMemberMember> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "status", parsed.status);
     if (parsed.status != "member") {
         throw std::invalid_argument("invalid ChatMemberMember.status discriminator");
@@ -238,7 +244,8 @@ void decode_object(const Json& json, ChatMemberOwner& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ChatMemberOwner parsed{};
+    detail::DecodeStorage<ChatMemberOwner> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "status", parsed.status);
     if (parsed.status != "creator") {
         throw std::invalid_argument("invalid ChatMemberOwner.status discriminator");
@@ -283,7 +290,8 @@ void decode_object(const Json& json, ChatMemberRestricted& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ChatMemberRestricted parsed{};
+    detail::DecodeStorage<ChatMemberRestricted> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "status", parsed.status);
     if (parsed.status != "restricted") {
         throw std::invalid_argument("invalid ChatMemberRestricted.status discriminator");
@@ -329,7 +337,8 @@ void decode_object(const Json& json, ChatMemberUpdated& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ChatMemberUpdated parsed{};
+    detail::DecodeStorage<ChatMemberUpdated> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat", parsed.chat);
     detail::read_required(json, "from", parsed.from);
     detail::read_required(json, "date", parsed.date);
@@ -351,7 +360,8 @@ void decode_object(const Json& json, ChatOwnerChanged& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ChatOwnerChanged parsed{};
+    detail::DecodeStorage<ChatOwnerChanged> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "new_owner", parsed.new_owner);
     value = std::move(parsed);
 }
@@ -366,7 +376,8 @@ void decode_object(const Json& json, ChatOwnerLeft& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ChatOwnerLeft parsed{};
+    detail::DecodeStorage<ChatOwnerLeft> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "new_owner", parsed.new_owner);
     value = std::move(parsed);
 }
@@ -397,7 +408,8 @@ void decode_object(const Json& json, ChatPermissions& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ChatPermissions parsed{};
+    detail::DecodeStorage<ChatPermissions> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "can_send_messages", parsed.can_send_messages);
     detail::read_optional(json, "can_send_audios", parsed.can_send_audios);
     detail::read_optional(json, "can_send_documents", parsed.can_send_documents);
@@ -430,7 +442,8 @@ void decode_object(const Json& json, ChatPhoto& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ChatPhoto parsed{};
+    detail::DecodeStorage<ChatPhoto> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "small_file_id", parsed.small_file_id);
     detail::read_required(json, "small_file_unique_id", parsed.small_file_unique_id);
     detail::read_required(json, "big_file_id", parsed.big_file_id);
@@ -452,7 +465,8 @@ void decode_object(const Json& json, ChatShared& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ChatShared parsed{};
+    detail::DecodeStorage<ChatShared> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "request_id", parsed.request_id);
     detail::read_required(json, "chat_id", parsed.chat_id);
     detail::read_optional(json, "title", parsed.title);
@@ -476,7 +490,8 @@ void decode_object(const Json& json, Checklist& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    Checklist parsed{};
+    detail::DecodeStorage<Checklist> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "title", parsed.title);
     detail::read_optional(json, "title_entities", parsed.title_entities);
     detail::read_required(json, "tasks", parsed.tasks);
@@ -501,7 +516,8 @@ void decode_object(const Json& json, ChecklistTask& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ChecklistTask parsed{};
+    detail::DecodeStorage<ChecklistTask> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "id", parsed.id);
     detail::read_required(json, "text", parsed.text);
     detail::read_optional(json, "text_entities", parsed.text_entities);
@@ -522,7 +538,8 @@ void decode_object(const Json& json, ChecklistTasksAdded& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ChecklistTasksAdded parsed{};
+    detail::DecodeStorage<ChecklistTasksAdded> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "checklist_message", parsed.checklist_message);
     detail::read_required(json, "tasks", parsed.tasks);
     value = std::move(parsed);
@@ -541,7 +558,8 @@ void decode_object(const Json& json, ChecklistTasksDone& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ChecklistTasksDone parsed{};
+    detail::DecodeStorage<ChecklistTasksDone> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "checklist_message", parsed.checklist_message);
     detail::read_optional(json, "marked_as_done_task_ids", parsed.marked_as_done_task_ids);
     detail::read_optional(json, "marked_as_not_done_task_ids", parsed.marked_as_not_done_task_ids);
@@ -562,7 +580,8 @@ void decode_object(const Json& json, ChosenInlineResult& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ChosenInlineResult parsed{};
+    detail::DecodeStorage<ChosenInlineResult> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "result_id", parsed.result_id);
     detail::read_required(json, "from", parsed.from);
     detail::read_optional(json, "location", parsed.location);
@@ -582,7 +601,8 @@ void decode_object(const Json& json, Community& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    Community parsed{};
+    detail::DecodeStorage<Community> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "id", parsed.id);
     detail::read_required(json, "name", parsed.name);
     value = std::move(parsed);
@@ -598,7 +618,8 @@ void decode_object(const Json& json, CommunityChatAdded& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    CommunityChatAdded parsed{};
+    detail::DecodeStorage<CommunityChatAdded> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "community", parsed.community);
     value = std::move(parsed);
 }
@@ -613,7 +634,8 @@ void decode_object(const Json& json, CommunityChatJoined& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    CommunityChatJoined parsed{};
+    detail::DecodeStorage<CommunityChatJoined> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "community", parsed.community);
     value = std::move(parsed);
 }
@@ -629,7 +651,8 @@ void decode_object(const Json& json, CommunityChatRemoved& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    CommunityChatRemoved parsed{};
+    detail::DecodeStorage<CommunityChatRemoved> storage;
+    auto& parsed = storage.value();
     value = std::move(parsed);
 }
 
@@ -647,7 +670,8 @@ void decode_object(const Json& json, Contact& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    Contact parsed{};
+    detail::DecodeStorage<Contact> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "phone_number", parsed.phone_number);
     detail::read_required(json, "first_name", parsed.first_name);
     detail::read_optional(json, "last_name", parsed.last_name);

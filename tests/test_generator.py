@@ -110,6 +110,18 @@ class GeneratorTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "setter collision"):
             generate.Generator(spec, "test").generate()
 
+    def test_generated_decode_uses_size_aware_transactional_scratch(self):
+        spec = json.loads((path.parents[1] / "spec/api.json").read_text(encoding="utf-8"))
+        outputs = generate.Generator(spec, "test").generate()
+        codecs = "\n".join(
+            text for name, text in outputs.items() if name.startswith("src/generated/")
+        )
+        self.assertIn("detail::DecodeStorage<Update> storage;", codecs)
+        self.assertIn("detail::DecodeStorage<User> storage;", codecs)
+        self.assertIn("auto& parsed = storage.value();", codecs)
+        self.assertIn("value = std::move(parsed);", codecs)
+        self.assertNotIn("Update parsed{};", codecs)
+
     def test_only_recursive_components_need_boxing(self):
         graph = {"Leaf": set(), "A": {"B", "Leaf"}, "B": {"A"}, "C": {"Leaf"}}
         groups = generate.components(graph)

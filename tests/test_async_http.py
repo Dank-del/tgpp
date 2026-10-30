@@ -57,7 +57,33 @@ if __name__ == "__main__":
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     try:
-        subprocess.run([sys.argv[1], f"http://127.0.0.1:{server.server_port}"], check=True)
+        process = subprocess.Popen([sys.argv[1], f"http://127.0.0.1:{server.server_port}"])
+        try:
+            result = process.wait(timeout=20)
+            if result:
+                raise subprocess.CalledProcessError(result, process.args)
+        except subprocess.TimeoutExpired:
+            if sys.platform == "darwin":
+                try:
+                    subprocess.run(
+                        [
+                            "lldb",
+                            "--batch",
+                            "-p",
+                            str(process.pid),
+                            "-o",
+                            "thread backtrace all",
+                            "-o",
+                            "process detach",
+                        ],
+                        timeout=5,
+                        check=False,
+                    )
+                except (OSError, subprocess.TimeoutExpired):
+                    pass
+            process.kill()
+            process.wait()
+            raise
     finally:
         server.shutdown()
         server.server_close()

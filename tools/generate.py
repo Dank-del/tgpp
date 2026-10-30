@@ -236,7 +236,8 @@ class Generator:
                 "}",
                 f"void decode_object(const Json& json, {name}& value) {{",
                 '    if (!json.is_object()) throw std::invalid_argument("expected Object");',
-                f"    {name} parsed{{}};",
+                f"    detail::DecodeStorage<{name}> storage;",
+                "    auto& parsed = storage.value();",
             ]
         )
         for field in node.get("fields", []):

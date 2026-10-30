@@ -13,20 +13,20 @@ if(TGPP_ASIO_INCLUDE_DIR)
          REGEX "^#define ASIO_VERSION [0-9]+"
     )
     string(REGEX MATCH "[0-9]+" asio_version "${asio_version_line}")
-    if(NOT asio_version OR asio_version LESS 103002)
-        message(STATUS "System standalone Asio is too old; using pinned 1.30.2")
+    if(NOT asio_version OR asio_version LESS 103802)
+        message(STATUS "System standalone Asio is too old; using pinned 1.38.2")
         set(TGPP_ASIO_INCLUDE_DIR "")
     endif()
 endif()
 if(NOT TGPP_ASIO_INCLUDE_DIR)
     FetchContent_Declare(
         tgpp_asio_source
-        URL https://codeload.github.com/chriskohlhoff/asio/tar.gz/refs/tags/asio-1-30-2
-        URL_HASH SHA256=755bd7f85a4b269c67ae0ea254907c078d408cce8e1a352ad2ed664d233780e8
+        URL https://codeload.github.com/chriskohlhoff/asio/tar.gz/refs/tags/asio-1-38-2
+        URL_HASH SHA256=9f2648fa483e58a6bf848d970ee0ea650ca19ed7769dfa520ed4f7b8d27af1db
         DOWNLOAD_EXTRACT_TIMESTAMP TRUE
     )
     FetchContent_MakeAvailable(tgpp_asio_source)
-    set(TGPP_ASIO_INCLUDE_DIR "${tgpp_asio_source_SOURCE_DIR}/asio/include")
+    set(TGPP_ASIO_INCLUDE_DIR "${tgpp_asio_source_SOURCE_DIR}/include")
 endif()
 add_library(tgpp_asio INTERFACE)
 set_target_properties(tgpp_asio PROPERTIES EXPORT_NAME asio)

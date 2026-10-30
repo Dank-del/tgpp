@@ -13,7 +13,8 @@ void decode_object(const Json& json, GetManagedBotAccessSettingsRequest& value) 
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    GetManagedBotAccessSettingsRequest parsed{};
+    detail::DecodeStorage<GetManagedBotAccessSettingsRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "user_id", parsed.user_id);
     value = std::move(parsed);
 }
@@ -43,7 +44,8 @@ void decode_object(const Json& json, GetManagedBotTokenRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    GetManagedBotTokenRequest parsed{};
+    detail::DecodeStorage<GetManagedBotTokenRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "user_id", parsed.user_id);
     value = std::move(parsed);
 }
@@ -73,7 +75,8 @@ void decode_object(const Json& json, GetMeRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    GetMeRequest parsed{};
+    detail::DecodeStorage<GetMeRequest> storage;
+    auto& parsed = storage.value();
     value = std::move(parsed);
 }
 
@@ -100,7 +103,8 @@ void decode_object(const Json& json, GetMyCommandsRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    GetMyCommandsRequest parsed{};
+    detail::DecodeStorage<GetMyCommandsRequest> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "scope", parsed.scope);
     detail::read_optional(json, "language_code", parsed.language_code);
     value = std::move(parsed);
@@ -129,7 +133,8 @@ void decode_object(const Json& json, GetMyDefaultAdministratorRightsRequest& val
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    GetMyDefaultAdministratorRightsRequest parsed{};
+    detail::DecodeStorage<GetMyDefaultAdministratorRightsRequest> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "for_channels", parsed.for_channels);
     value = std::move(parsed);
 }
@@ -159,7 +164,8 @@ void decode_object(const Json& json, GetMyDescriptionRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    GetMyDescriptionRequest parsed{};
+    detail::DecodeStorage<GetMyDescriptionRequest> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "language_code", parsed.language_code);
     value = std::move(parsed);
 }
@@ -187,7 +193,8 @@ void decode_object(const Json& json, GetMyNameRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    GetMyNameRequest parsed{};
+    detail::DecodeStorage<GetMyNameRequest> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "language_code", parsed.language_code);
     value = std::move(parsed);
 }
@@ -215,7 +222,8 @@ void decode_object(const Json& json, GetMyShortDescriptionRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    GetMyShortDescriptionRequest parsed{};
+    detail::DecodeStorage<GetMyShortDescriptionRequest> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "language_code", parsed.language_code);
     value = std::move(parsed);
 }
@@ -245,7 +253,8 @@ void decode_object(const Json& json, GetMyStarBalanceRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    GetMyStarBalanceRequest parsed{};
+    detail::DecodeStorage<GetMyStarBalanceRequest> storage;
+    auto& parsed = storage.value();
     value = std::move(parsed);
 }
 
@@ -273,7 +282,8 @@ void decode_object(const Json& json, GetStarTransactionsRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    GetStarTransactionsRequest parsed{};
+    detail::DecodeStorage<GetStarTransactionsRequest> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "offset", parsed.offset);
     detail::read_optional(json, "limit", parsed.limit);
     value = std::move(parsed);
@@ -303,7 +313,8 @@ void decode_object(const Json& json, GetStickerSetRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    GetStickerSetRequest parsed{};
+    detail::DecodeStorage<GetStickerSetRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "name", parsed.name);
     value = std::move(parsed);
 }
@@ -334,7 +345,8 @@ void decode_object(const Json& json, GetUpdatesRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    GetUpdatesRequest parsed{};
+    detail::DecodeStorage<GetUpdatesRequest> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "offset", parsed.offset);
     detail::read_optional(json, "limit", parsed.limit);
     detail::read_optional(json, "timeout", parsed.timeout);

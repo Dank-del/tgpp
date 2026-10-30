@@ -15,7 +15,8 @@ void decode_object(const Json& json, UnpinChatMessageRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    UnpinChatMessageRequest parsed{};
+    detail::DecodeStorage<UnpinChatMessageRequest> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "business_connection_id", parsed.business_connection_id);
     detail::read_required(json, "chat_id", parsed.chat_id);
     detail::read_optional(json, "message_id", parsed.message_id);
@@ -48,7 +49,8 @@ void decode_object(const Json& json, UpgradeGiftRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    UpgradeGiftRequest parsed{};
+    detail::DecodeStorage<UpgradeGiftRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "business_connection_id", parsed.business_connection_id);
     detail::read_required(json, "owned_gift_id", parsed.owned_gift_id);
     detail::read_optional(json, "keep_original_details", parsed.keep_original_details);
@@ -81,7 +83,8 @@ void decode_object(const Json& json, UploadStickerFileRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    UploadStickerFileRequest parsed{};
+    detail::DecodeStorage<UploadStickerFileRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "user_id", parsed.user_id);
     detail::read_required(json, "sticker", parsed.sticker);
     detail::read_required(json, "sticker_format", parsed.sticker_format);
@@ -112,7 +115,8 @@ void decode_object(const Json& json, VerifyChatRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    VerifyChatRequest parsed{};
+    detail::DecodeStorage<VerifyChatRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_id", parsed.chat_id);
     detail::read_optional(json, "custom_description", parsed.custom_description);
     value = std::move(parsed);
@@ -141,7 +145,8 @@ void decode_object(const Json& json, VerifyUserRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    VerifyUserRequest parsed{};
+    detail::DecodeStorage<VerifyUserRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "user_id", parsed.user_id);
     detail::read_optional(json, "custom_description", parsed.custom_description);
     value = std::move(parsed);

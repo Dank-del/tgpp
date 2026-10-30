@@ -182,6 +182,7 @@ foreach(
     RouterTests
     ApiBuilderTests
     FutureApiTests
+    DecodeStorageTests
 )
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/cmake/${test_file}.cmake")
         include("cmake/${test_file}.cmake")

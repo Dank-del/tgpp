@@ -13,7 +13,8 @@ void decode_object(const Json& json, Link& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    Link parsed{};
+    detail::DecodeStorage<Link> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "url", parsed.url);
     value = std::move(parsed);
 }
@@ -32,7 +33,8 @@ void decode_object(const Json& json, LinkPreviewOptions& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    LinkPreviewOptions parsed{};
+    detail::DecodeStorage<LinkPreviewOptions> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "is_disabled", parsed.is_disabled);
     detail::read_optional(json, "url", parsed.url);
     detail::read_optional(json, "prefer_small_media", parsed.prefer_small_media);
@@ -58,7 +60,8 @@ void decode_object(const Json& json, LivePhoto& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    LivePhoto parsed{};
+    detail::DecodeStorage<LivePhoto> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "photo", parsed.photo);
     detail::read_required(json, "file_id", parsed.file_id);
     detail::read_required(json, "file_unique_id", parsed.file_unique_id);
@@ -85,7 +88,8 @@ void decode_object(const Json& json, Location& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    Location parsed{};
+    detail::DecodeStorage<Location> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "latitude", parsed.latitude);
     detail::read_required(json, "longitude", parsed.longitude);
     detail::read_optional(json, "horizontal_accuracy", parsed.horizontal_accuracy);
@@ -108,7 +112,8 @@ void decode_object(const Json& json, LocationAddress& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    LocationAddress parsed{};
+    detail::DecodeStorage<LocationAddress> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "country_code", parsed.country_code);
     detail::read_optional(json, "state", parsed.state);
     detail::read_optional(json, "city", parsed.city);
@@ -129,7 +134,8 @@ void decode_object(const Json& json, LoginUrl& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    LoginUrl parsed{};
+    detail::DecodeStorage<LoginUrl> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "url", parsed.url);
     detail::read_optional(json, "forward_text", parsed.forward_text);
     detail::read_optional(json, "bot_username", parsed.bot_username);
@@ -147,7 +153,8 @@ void decode_object(const Json& json, ManagedBotCreated& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ManagedBotCreated parsed{};
+    detail::DecodeStorage<ManagedBotCreated> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "bot", parsed.bot);
     value = std::move(parsed);
 }
@@ -163,7 +170,8 @@ void decode_object(const Json& json, ManagedBotUpdated& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ManagedBotUpdated parsed{};
+    detail::DecodeStorage<ManagedBotUpdated> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "user", parsed.user);
     detail::read_required(json, "bot", parsed.bot);
     value = std::move(parsed);
@@ -182,7 +190,8 @@ void decode_object(const Json& json, MaskPosition& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    MaskPosition parsed{};
+    detail::DecodeStorage<MaskPosition> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "point", parsed.point);
     detail::read_required(json, "x_shift", parsed.x_shift);
     detail::read_required(json, "y_shift", parsed.y_shift);
@@ -245,7 +254,8 @@ void decode_object(const Json& json, MenuButtonCommands& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    MenuButtonCommands parsed{};
+    detail::DecodeStorage<MenuButtonCommands> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "commands") {
         throw std::invalid_argument("invalid MenuButtonCommands.type discriminator");
@@ -266,7 +276,8 @@ void decode_object(const Json& json, MenuButtonDefault& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    MenuButtonDefault parsed{};
+    detail::DecodeStorage<MenuButtonDefault> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "default") {
         throw std::invalid_argument("invalid MenuButtonDefault.type discriminator");
@@ -289,7 +300,8 @@ void decode_object(const Json& json, MenuButtonWebApp& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    MenuButtonWebApp parsed{};
+    detail::DecodeStorage<MenuButtonWebApp> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "web_app") {
         throw std::invalid_argument("invalid MenuButtonWebApp.type discriminator");
@@ -439,7 +451,8 @@ void decode_object(const Json& json, Message& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    Message parsed{};
+    detail::DecodeStorage<Message> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "message_id", parsed.message_id);
     detail::read_optional(json, "message_thread_id", parsed.message_thread_id);
     detail::read_optional(json, "direct_messages_topic", parsed.direct_messages_topic);
@@ -578,7 +591,8 @@ void decode_object(const Json& json, MessageAutoDeleteTimerChanged& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    MessageAutoDeleteTimerChanged parsed{};
+    detail::DecodeStorage<MessageAutoDeleteTimerChanged> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "message_auto_delete_time", parsed.message_auto_delete_time);
     value = std::move(parsed);
 }
@@ -601,7 +615,8 @@ void decode_object(const Json& json, MessageEntity& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    MessageEntity parsed{};
+    detail::DecodeStorage<MessageEntity> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     detail::read_required(json, "offset", parsed.offset);
     detail::read_required(json, "length", parsed.length);
@@ -626,7 +641,8 @@ void decode_object(const Json& json, MessageGenerationStopped& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    MessageGenerationStopped parsed{};
+    detail::DecodeStorage<MessageGenerationStopped> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat", parsed.chat);
     detail::read_optional(json, "message_thread_id", parsed.message_thread_id);
     detail::read_required(json, "draft_id", parsed.draft_id);
@@ -643,7 +659,8 @@ void decode_object(const Json& json, MessageId& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    MessageId parsed{};
+    detail::DecodeStorage<MessageId> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "message_id", parsed.message_id);
     value = std::move(parsed);
 }
@@ -692,7 +709,8 @@ void decode_object(const Json& json, MessageOriginChannel& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    MessageOriginChannel parsed{};
+    detail::DecodeStorage<MessageOriginChannel> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "channel") {
         throw std::invalid_argument("invalid MessageOriginChannel.type discriminator");
@@ -720,7 +738,8 @@ void decode_object(const Json& json, MessageOriginChat& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    MessageOriginChat parsed{};
+    detail::DecodeStorage<MessageOriginChat> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "chat") {
         throw std::invalid_argument("invalid MessageOriginChat.type discriminator");
@@ -746,7 +765,8 @@ void decode_object(const Json& json, MessageOriginHiddenUser& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    MessageOriginHiddenUser parsed{};
+    detail::DecodeStorage<MessageOriginHiddenUser> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "hidden_user") {
         throw std::invalid_argument("invalid MessageOriginHiddenUser.type discriminator");
@@ -771,7 +791,8 @@ void decode_object(const Json& json, MessageOriginUser& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    MessageOriginUser parsed{};
+    detail::DecodeStorage<MessageOriginUser> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "user") {
         throw std::invalid_argument("invalid MessageOriginUser.type discriminator");
@@ -794,7 +815,8 @@ void decode_object(const Json& json, MessageReactionCountUpdated& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    MessageReactionCountUpdated parsed{};
+    detail::DecodeStorage<MessageReactionCountUpdated> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat", parsed.chat);
     detail::read_required(json, "message_id", parsed.message_id);
     detail::read_required(json, "date", parsed.date);

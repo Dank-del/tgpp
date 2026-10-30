@@ -1,0 +1,5 @@
+if(TGPP_BUILD_TESTS)
+    add_executable(tgpp_decode_storage_tests tests/test_decode_storage.cpp)
+    target_link_libraries(tgpp_decode_storage_tests PRIVATE tgpp::tgpp)
+    add_test(NAME decode_storage COMMAND tgpp_decode_storage_tests)
+endif()

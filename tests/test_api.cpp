@@ -72,6 +72,15 @@ int main() {
         rejects([] { from_json<std::int64_t>(Json(2.5)); });
         rejects([] { from_json<bool>(Json(1)); });
         rejects([] { from_json<std::int64_t>(Json(std::numeric_limits<std::uint64_t>::max())); });
+        require(from_json<std::vector<bool>>(Json::array({true, false})) ==
+                    std::vector<bool>({true, false}),
+                "boolean array decode failed");
+        std::vector<std::int64_t> preserved{7};
+        rejects([&] {
+            Codec<std::vector<std::int64_t>>::decode(Json::array({1, "invalid"}), preserved);
+        });
+        require(preserved == std::vector<std::int64_t>({7}),
+                "failed array decode mutated destination");
         require(from_json<std::int64_t>(Json(std::numeric_limits<std::int64_t>::max())) ==
                     std::numeric_limits<std::int64_t>::max(),
                 "int64 range lost");

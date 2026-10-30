@@ -14,7 +14,8 @@ void decode_object(const Json& json, CloseRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    CloseRequest parsed{};
+    detail::DecodeStorage<CloseRequest> storage;
+    auto& parsed = storage.value();
     value = std::move(parsed);
 }
 
@@ -41,7 +42,8 @@ void decode_object(const Json& json, CloseForumTopicRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    CloseForumTopicRequest parsed{};
+    detail::DecodeStorage<CloseForumTopicRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_id", parsed.chat_id);
     detail::read_required(json, "message_thread_id", parsed.message_thread_id);
     value = std::move(parsed);
@@ -70,7 +72,8 @@ void decode_object(const Json& json, CloseGeneralForumTopicRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    CloseGeneralForumTopicRequest parsed{};
+    detail::DecodeStorage<CloseGeneralForumTopicRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_id", parsed.chat_id);
     value = std::move(parsed);
 }
@@ -100,7 +103,8 @@ void decode_object(const Json& json, ConvertGiftToStarsRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ConvertGiftToStarsRequest parsed{};
+    detail::DecodeStorage<ConvertGiftToStarsRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "business_connection_id", parsed.business_connection_id);
     detail::read_required(json, "owned_gift_id", parsed.owned_gift_id);
     value = std::move(parsed);
@@ -147,7 +151,8 @@ void decode_object(const Json& json, CopyMessageRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    CopyMessageRequest parsed{};
+    detail::DecodeStorage<CopyMessageRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_id", parsed.chat_id);
     detail::read_optional(json, "message_thread_id", parsed.message_thread_id);
     detail::read_optional(json, "direct_messages_topic_id", parsed.direct_messages_topic_id);
@@ -198,7 +203,8 @@ void decode_object(const Json& json, CopyMessagesRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    CopyMessagesRequest parsed{};
+    detail::DecodeStorage<CopyMessagesRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_id", parsed.chat_id);
     detail::read_optional(json, "message_thread_id", parsed.message_thread_id);
     detail::read_optional(json, "direct_messages_topic_id", parsed.direct_messages_topic_id);
@@ -237,7 +243,8 @@ void decode_object(const Json& json, CreateChatInviteLinkRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    CreateChatInviteLinkRequest parsed{};
+    detail::DecodeStorage<CreateChatInviteLinkRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_id", parsed.chat_id);
     detail::read_optional(json, "name", parsed.name);
     detail::read_optional(json, "expire_date", parsed.expire_date);
@@ -273,7 +280,8 @@ void decode_object(const Json& json, CreateChatSubscriptionInviteLinkRequest& va
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    CreateChatSubscriptionInviteLinkRequest parsed{};
+    detail::DecodeStorage<CreateChatSubscriptionInviteLinkRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_id", parsed.chat_id);
     detail::read_optional(json, "name", parsed.name);
     detail::read_required(json, "subscription_period", parsed.subscription_period);
@@ -309,7 +317,8 @@ void decode_object(const Json& json, CreateForumTopicRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    CreateForumTopicRequest parsed{};
+    detail::DecodeStorage<CreateForumTopicRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_id", parsed.chat_id);
     detail::read_required(json, "name", parsed.name);
     detail::read_optional(json, "icon_color", parsed.icon_color);
@@ -362,7 +371,8 @@ void decode_object(const Json& json, CreateInvoiceLinkRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    CreateInvoiceLinkRequest parsed{};
+    detail::DecodeStorage<CreateInvoiceLinkRequest> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "business_connection_id", parsed.business_connection_id);
     detail::read_required(json, "title", parsed.title);
     detail::read_required(json, "description", parsed.description);
@@ -417,7 +427,8 @@ void decode_object(const Json& json, CreateNewStickerSetRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    CreateNewStickerSetRequest parsed{};
+    detail::DecodeStorage<CreateNewStickerSetRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "user_id", parsed.user_id);
     detail::read_required(json, "name", parsed.name);
     detail::read_required(json, "title", parsed.title);
@@ -452,7 +463,8 @@ void decode_object(const Json& json, DeclineChatJoinRequestRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    DeclineChatJoinRequestRequest parsed{};
+    detail::DecodeStorage<DeclineChatJoinRequestRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_id", parsed.chat_id);
     detail::read_required(json, "user_id", parsed.user_id);
     value = std::move(parsed);

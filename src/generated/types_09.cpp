@@ -19,7 +19,8 @@ void decode_object(const Json& json, MessageReactionUpdated& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    MessageReactionUpdated parsed{};
+    detail::DecodeStorage<MessageReactionUpdated> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat", parsed.chat);
     detail::read_required(json, "message_id", parsed.message_id);
     detail::read_optional(json, "user", parsed.user);
@@ -43,7 +44,8 @@ void decode_object(const Json& json, OrderInfo& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    OrderInfo parsed{};
+    detail::DecodeStorage<OrderInfo> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "name", parsed.name);
     detail::read_optional(json, "phone_number", parsed.phone_number);
     detail::read_optional(json, "email", parsed.email);
@@ -98,7 +100,8 @@ void decode_object(const Json& json, OwnedGiftRegular& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    OwnedGiftRegular parsed{};
+    detail::DecodeStorage<OwnedGiftRegular> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "regular") {
         throw std::invalid_argument("invalid OwnedGiftRegular.type discriminator");
@@ -141,7 +144,8 @@ void decode_object(const Json& json, OwnedGiftUnique& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    OwnedGiftUnique parsed{};
+    detail::DecodeStorage<OwnedGiftUnique> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "unique") {
         throw std::invalid_argument("invalid OwnedGiftUnique.type discriminator");
@@ -169,7 +173,8 @@ void decode_object(const Json& json, OwnedGifts& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    OwnedGifts parsed{};
+    detail::DecodeStorage<OwnedGifts> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "total_count", parsed.total_count);
     detail::read_required(json, "gifts", parsed.gifts);
     detail::read_optional(json, "next_offset", parsed.next_offset);
@@ -214,7 +219,8 @@ void decode_object(const Json& json, PaidMediaInfo& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    PaidMediaInfo parsed{};
+    detail::DecodeStorage<PaidMediaInfo> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "star_count", parsed.star_count);
     detail::read_required(json, "paid_media", parsed.paid_media);
     value = std::move(parsed);
@@ -234,7 +240,8 @@ void decode_object(const Json& json, PaidMediaLivePhoto& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    PaidMediaLivePhoto parsed{};
+    detail::DecodeStorage<PaidMediaLivePhoto> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "live_photo") {
         throw std::invalid_argument("invalid PaidMediaLivePhoto.type discriminator");
@@ -257,7 +264,8 @@ void decode_object(const Json& json, PaidMediaPhoto& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    PaidMediaPhoto parsed{};
+    detail::DecodeStorage<PaidMediaPhoto> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "photo") {
         throw std::invalid_argument("invalid PaidMediaPhoto.type discriminator");
@@ -282,7 +290,8 @@ void decode_object(const Json& json, PaidMediaPreview& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    PaidMediaPreview parsed{};
+    detail::DecodeStorage<PaidMediaPreview> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "preview") {
         throw std::invalid_argument("invalid PaidMediaPreview.type discriminator");
@@ -304,7 +313,8 @@ void decode_object(const Json& json, PaidMediaPurchased& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    PaidMediaPurchased parsed{};
+    detail::DecodeStorage<PaidMediaPurchased> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "from", parsed.from);
     detail::read_required(json, "paid_media_payload", parsed.paid_media_payload);
     value = std::move(parsed);
@@ -324,7 +334,8 @@ void decode_object(const Json& json, PaidMediaVideo& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    PaidMediaVideo parsed{};
+    detail::DecodeStorage<PaidMediaVideo> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "video") {
         throw std::invalid_argument("invalid PaidMediaVideo.type discriminator");
@@ -343,7 +354,8 @@ void decode_object(const Json& json, PaidMessagePriceChanged& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    PaidMessagePriceChanged parsed{};
+    detail::DecodeStorage<PaidMessagePriceChanged> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "paid_message_star_count", parsed.paid_message_star_count);
     value = std::move(parsed);
 }
@@ -359,7 +371,8 @@ void decode_object(const Json& json, PassportData& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    PassportData parsed{};
+    detail::DecodeStorage<PassportData> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "data", parsed.data);
     detail::read_required(json, "credentials", parsed.credentials);
     value = std::move(parsed);
@@ -429,7 +442,8 @@ void decode_object(const Json& json, PassportElementErrorDataField& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    PassportElementErrorDataField parsed{};
+    detail::DecodeStorage<PassportElementErrorDataField> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "source", parsed.source);
     if (parsed.source != "data") {
         throw std::invalid_argument("invalid PassportElementErrorDataField.source discriminator");
@@ -457,7 +471,8 @@ void decode_object(const Json& json, PassportElementErrorFile& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    PassportElementErrorFile parsed{};
+    detail::DecodeStorage<PassportElementErrorFile> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "source", parsed.source);
     if (parsed.source != "file") {
         throw std::invalid_argument("invalid PassportElementErrorFile.source discriminator");
@@ -484,7 +499,8 @@ void decode_object(const Json& json, PassportElementErrorFiles& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    PassportElementErrorFiles parsed{};
+    detail::DecodeStorage<PassportElementErrorFiles> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "source", parsed.source);
     if (parsed.source != "files") {
         throw std::invalid_argument("invalid PassportElementErrorFiles.source discriminator");
@@ -511,7 +527,8 @@ void decode_object(const Json& json, PassportElementErrorFrontSide& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    PassportElementErrorFrontSide parsed{};
+    detail::DecodeStorage<PassportElementErrorFrontSide> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "source", parsed.source);
     if (parsed.source != "front_side") {
         throw std::invalid_argument("invalid PassportElementErrorFrontSide.source discriminator");
@@ -538,7 +555,8 @@ void decode_object(const Json& json, PassportElementErrorReverseSide& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    PassportElementErrorReverseSide parsed{};
+    detail::DecodeStorage<PassportElementErrorReverseSide> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "source", parsed.source);
     if (parsed.source != "reverse_side") {
         throw std::invalid_argument("invalid PassportElementErrorReverseSide.source discriminator");
@@ -565,7 +583,8 @@ void decode_object(const Json& json, PassportElementErrorSelfie& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    PassportElementErrorSelfie parsed{};
+    detail::DecodeStorage<PassportElementErrorSelfie> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "source", parsed.source);
     if (parsed.source != "selfie") {
         throw std::invalid_argument("invalid PassportElementErrorSelfie.source discriminator");
@@ -593,7 +612,8 @@ void decode_object(const Json& json, PassportElementErrorTranslationFile& value)
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    PassportElementErrorTranslationFile parsed{};
+    detail::DecodeStorage<PassportElementErrorTranslationFile> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "source", parsed.source);
     if (parsed.source != "translation_file") {
         throw std::invalid_argument(
@@ -622,7 +642,8 @@ void decode_object(const Json& json, PassportElementErrorTranslationFiles& value
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    PassportElementErrorTranslationFiles parsed{};
+    detail::DecodeStorage<PassportElementErrorTranslationFiles> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "source", parsed.source);
     if (parsed.source != "translation_files") {
         throw std::invalid_argument(
@@ -650,7 +671,8 @@ void decode_object(const Json& json, PassportElementErrorUnspecified& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    PassportElementErrorUnspecified parsed{};
+    detail::DecodeStorage<PassportElementErrorUnspecified> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "source", parsed.source);
     if (parsed.source != "unspecified") {
         throw std::invalid_argument("invalid PassportElementErrorUnspecified.source discriminator");

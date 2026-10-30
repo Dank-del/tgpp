@@ -39,8 +39,8 @@ install(
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/tgpp
 )
 install(FILES LICENSE DESTINATION ${CMAKE_INSTALL_DATADIR}/licenses/tgpp)
-if(TGPP_BUILD_ASYNC AND EXISTS "${tgpp_asio_source_SOURCE_DIR}/asio/LICENSE_1_0.txt")
-    install(FILES "${tgpp_asio_source_SOURCE_DIR}/asio/LICENSE_1_0.txt"
+if(TGPP_BUILD_ASYNC AND EXISTS "${tgpp_asio_source_SOURCE_DIR}/LICENSE_1_0.txt")
+    install(FILES "${tgpp_asio_source_SOURCE_DIR}/LICENSE_1_0.txt"
             DESTINATION ${CMAKE_INSTALL_DATADIR}/licenses/tgpp/asio
     )
 endif()

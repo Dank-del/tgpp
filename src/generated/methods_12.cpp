@@ -14,7 +14,8 @@ void decode_object(const Json& json, SetChatDescriptionRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SetChatDescriptionRequest parsed{};
+    detail::DecodeStorage<SetChatDescriptionRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_id", parsed.chat_id);
     detail::read_optional(json, "description", parsed.description);
     value = std::move(parsed);
@@ -46,7 +47,8 @@ void decode_object(const Json& json, SetChatMemberTagRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SetChatMemberTagRequest parsed{};
+    detail::DecodeStorage<SetChatMemberTagRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_id", parsed.chat_id);
     detail::read_required(json, "user_id", parsed.user_id);
     detail::read_optional(json, "tag", parsed.tag);
@@ -77,7 +79,8 @@ void decode_object(const Json& json, SetChatMenuButtonRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SetChatMenuButtonRequest parsed{};
+    detail::DecodeStorage<SetChatMenuButtonRequest> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "chat_id", parsed.chat_id);
     detail::read_optional(json, "menu_button", parsed.menu_button);
     value = std::move(parsed);
@@ -109,7 +112,8 @@ void decode_object(const Json& json, SetChatPermissionsRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SetChatPermissionsRequest parsed{};
+    detail::DecodeStorage<SetChatPermissionsRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_id", parsed.chat_id);
     detail::read_required(json, "permissions", parsed.permissions);
     detail::read_optional(
@@ -142,7 +146,8 @@ void decode_object(const Json& json, SetChatPhotoRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SetChatPhotoRequest parsed{};
+    detail::DecodeStorage<SetChatPhotoRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_id", parsed.chat_id);
     detail::read_required(json, "photo", parsed.photo);
     value = std::move(parsed);
@@ -172,7 +177,8 @@ void decode_object(const Json& json, SetChatStickerSetRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SetChatStickerSetRequest parsed{};
+    detail::DecodeStorage<SetChatStickerSetRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_id", parsed.chat_id);
     detail::read_required(json, "sticker_set_name", parsed.sticker_set_name);
     value = std::move(parsed);
@@ -202,7 +208,8 @@ void decode_object(const Json& json, SetChatTitleRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SetChatTitleRequest parsed{};
+    detail::DecodeStorage<SetChatTitleRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_id", parsed.chat_id);
     detail::read_required(json, "title", parsed.title);
     value = std::move(parsed);
@@ -232,7 +239,8 @@ void decode_object(const Json& json, SetCustomEmojiStickerSetThumbnailRequest& v
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SetCustomEmojiStickerSetThumbnailRequest parsed{};
+    detail::DecodeStorage<SetCustomEmojiStickerSetThumbnailRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "name", parsed.name);
     detail::read_optional(json, "custom_emoji_id", parsed.custom_emoji_id);
     value = std::move(parsed);
@@ -269,7 +277,8 @@ void decode_object(const Json& json, SetGameScoreRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SetGameScoreRequest parsed{};
+    detail::DecodeStorage<SetGameScoreRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "user_id", parsed.user_id);
     detail::read_required(json, "score", parsed.score);
     detail::read_optional(json, "force", parsed.force);
@@ -306,7 +315,8 @@ void decode_object(const Json& json, SetManagedBotAccessSettingsRequest& value) 
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SetManagedBotAccessSettingsRequest parsed{};
+    detail::DecodeStorage<SetManagedBotAccessSettingsRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "user_id", parsed.user_id);
     detail::read_required(json, "is_access_restricted", parsed.is_access_restricted);
     detail::read_optional(json, "added_user_ids", parsed.added_user_ids);
@@ -340,7 +350,8 @@ void decode_object(const Json& json, SetMessageReactionRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SetMessageReactionRequest parsed{};
+    detail::DecodeStorage<SetMessageReactionRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_id", parsed.chat_id);
     detail::read_required(json, "message_id", parsed.message_id);
     detail::read_optional(json, "reaction", parsed.reaction);
@@ -374,7 +385,8 @@ void decode_object(const Json& json, SetMyCommandsRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SetMyCommandsRequest parsed{};
+    detail::DecodeStorage<SetMyCommandsRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "commands", parsed.commands);
     detail::read_optional(json, "scope", parsed.scope);
     detail::read_optional(json, "language_code", parsed.language_code);

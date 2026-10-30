@@ -34,7 +34,8 @@ void decode_object(const Json& json, PromoteChatMemberRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    PromoteChatMemberRequest parsed{};
+    detail::DecodeStorage<PromoteChatMemberRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_id", parsed.chat_id);
     detail::read_required(json, "user_id", parsed.user_id);
     detail::read_optional(json, "is_anonymous", parsed.is_anonymous);
@@ -83,7 +84,8 @@ void decode_object(const Json& json, ReadBusinessMessageRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ReadBusinessMessageRequest parsed{};
+    detail::DecodeStorage<ReadBusinessMessageRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "business_connection_id", parsed.business_connection_id);
     detail::read_required(json, "chat_id", parsed.chat_id);
     detail::read_required(json, "message_id", parsed.message_id);
@@ -116,7 +118,8 @@ void decode_object(const Json& json, RefundStarPaymentRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RefundStarPaymentRequest parsed{};
+    detail::DecodeStorage<RefundStarPaymentRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "user_id", parsed.user_id);
     detail::read_required(json, "telegram_payment_charge_id", parsed.telegram_payment_charge_id);
     value = std::move(parsed);
@@ -146,7 +149,8 @@ void decode_object(const Json& json, RemoveBusinessAccountProfilePhotoRequest& v
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RemoveBusinessAccountProfilePhotoRequest parsed{};
+    detail::DecodeStorage<RemoveBusinessAccountProfilePhotoRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "business_connection_id", parsed.business_connection_id);
     detail::read_optional(json, "is_public", parsed.is_public);
     value = std::move(parsed);
@@ -177,7 +181,8 @@ void decode_object(const Json& json, RemoveChatVerificationRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RemoveChatVerificationRequest parsed{};
+    detail::DecodeStorage<RemoveChatVerificationRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_id", parsed.chat_id);
     value = std::move(parsed);
 }
@@ -207,7 +212,8 @@ void decode_object(const Json& json, RemoveMyProfilePhotoRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RemoveMyProfilePhotoRequest parsed{};
+    detail::DecodeStorage<RemoveMyProfilePhotoRequest> storage;
+    auto& parsed = storage.value();
     value = std::move(parsed);
 }
 
@@ -235,7 +241,8 @@ void decode_object(const Json& json, RemoveUserVerificationRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RemoveUserVerificationRequest parsed{};
+    detail::DecodeStorage<RemoveUserVerificationRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "user_id", parsed.user_id);
     value = std::move(parsed);
 }
@@ -265,7 +272,8 @@ void decode_object(const Json& json, ReopenForumTopicRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ReopenForumTopicRequest parsed{};
+    detail::DecodeStorage<ReopenForumTopicRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_id", parsed.chat_id);
     detail::read_required(json, "message_thread_id", parsed.message_thread_id);
     value = std::move(parsed);
@@ -294,7 +302,8 @@ void decode_object(const Json& json, ReopenGeneralForumTopicRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ReopenGeneralForumTopicRequest parsed{};
+    detail::DecodeStorage<ReopenGeneralForumTopicRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_id", parsed.chat_id);
     value = std::move(parsed);
 }
@@ -323,7 +332,8 @@ void decode_object(const Json& json, ReplaceManagedBotTokenRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ReplaceManagedBotTokenRequest parsed{};
+    detail::DecodeStorage<ReplaceManagedBotTokenRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "user_id", parsed.user_id);
     value = std::move(parsed);
 }
@@ -355,7 +365,8 @@ void decode_object(const Json& json, ReplaceStickerInSetRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ReplaceStickerInSetRequest parsed{};
+    detail::DecodeStorage<ReplaceStickerInSetRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "user_id", parsed.user_id);
     detail::read_required(json, "name", parsed.name);
     detail::read_required(json, "old_sticker", parsed.old_sticker);
@@ -392,7 +403,8 @@ void decode_object(const Json& json, RepostStoryRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RepostStoryRequest parsed{};
+    detail::DecodeStorage<RepostStoryRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "business_connection_id", parsed.business_connection_id);
     detail::read_required(json, "from_chat_id", parsed.from_chat_id);
     detail::read_required(json, "from_story_id", parsed.from_story_id);

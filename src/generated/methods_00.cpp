@@ -15,7 +15,8 @@ void decode_object(const Json& json, AddStickerToSetRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    AddStickerToSetRequest parsed{};
+    detail::DecodeStorage<AddStickerToSetRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "user_id", parsed.user_id);
     detail::read_required(json, "name", parsed.name);
     detail::read_required(json, "sticker", parsed.sticker);
@@ -49,7 +50,8 @@ void decode_object(const Json& json, AnswerCallbackQueryRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    AnswerCallbackQueryRequest parsed{};
+    detail::DecodeStorage<AnswerCallbackQueryRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "callback_query_id", parsed.callback_query_id);
     detail::read_optional(json, "text", parsed.text);
     detail::read_optional(json, "show_alert", parsed.show_alert);
@@ -84,7 +86,8 @@ void decode_object(const Json& json, AnswerChatJoinRequestQueryRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    AnswerChatJoinRequestQueryRequest parsed{};
+    detail::DecodeStorage<AnswerChatJoinRequestQueryRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_join_request_query_id", parsed.chat_join_request_query_id);
     detail::read_required(json, "result", parsed.result);
     value = std::move(parsed);
@@ -115,7 +118,8 @@ void decode_object(const Json& json, AnswerGuestQueryRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    AnswerGuestQueryRequest parsed{};
+    detail::DecodeStorage<AnswerGuestQueryRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "guest_query_id", parsed.guest_query_id);
     detail::read_required(json, "result", parsed.result);
     value = std::move(parsed);
@@ -149,7 +153,8 @@ void decode_object(const Json& json, AnswerInlineQueryRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    AnswerInlineQueryRequest parsed{};
+    detail::DecodeStorage<AnswerInlineQueryRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "inline_query_id", parsed.inline_query_id);
     detail::read_required(json, "results", parsed.results);
     detail::read_optional(json, "cache_time", parsed.cache_time);
@@ -184,7 +189,8 @@ void decode_object(const Json& json, AnswerPreCheckoutQueryRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    AnswerPreCheckoutQueryRequest parsed{};
+    detail::DecodeStorage<AnswerPreCheckoutQueryRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "pre_checkout_query_id", parsed.pre_checkout_query_id);
     detail::read_required(json, "ok", parsed.ok);
     detail::read_optional(json, "error_message", parsed.error_message);
@@ -218,7 +224,8 @@ void decode_object(const Json& json, AnswerShippingQueryRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    AnswerShippingQueryRequest parsed{};
+    detail::DecodeStorage<AnswerShippingQueryRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "shipping_query_id", parsed.shipping_query_id);
     detail::read_required(json, "ok", parsed.ok);
     detail::read_optional(json, "shipping_options", parsed.shipping_options);
@@ -251,7 +258,8 @@ void decode_object(const Json& json, AnswerWebAppQueryRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    AnswerWebAppQueryRequest parsed{};
+    detail::DecodeStorage<AnswerWebAppQueryRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "web_app_query_id", parsed.web_app_query_id);
     detail::read_required(json, "result", parsed.result);
     value = std::move(parsed);
@@ -281,7 +289,8 @@ void decode_object(const Json& json, ApproveChatJoinRequestRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ApproveChatJoinRequestRequest parsed{};
+    detail::DecodeStorage<ApproveChatJoinRequestRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_id", parsed.chat_id);
     detail::read_required(json, "user_id", parsed.user_id);
     value = std::move(parsed);
@@ -313,7 +322,8 @@ void decode_object(const Json& json, ApproveSuggestedPostRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ApproveSuggestedPostRequest parsed{};
+    detail::DecodeStorage<ApproveSuggestedPostRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_id", parsed.chat_id);
     detail::read_required(json, "message_id", parsed.message_id);
     detail::read_optional(json, "send_date", parsed.send_date);
@@ -347,7 +357,8 @@ void decode_object(const Json& json, BanChatMemberRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    BanChatMemberRequest parsed{};
+    detail::DecodeStorage<BanChatMemberRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_id", parsed.chat_id);
     detail::read_required(json, "user_id", parsed.user_id);
     detail::read_optional(json, "until_date", parsed.until_date);
@@ -379,7 +390,8 @@ void decode_object(const Json& json, BanChatSenderChatRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    BanChatSenderChatRequest parsed{};
+    detail::DecodeStorage<BanChatSenderChatRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_id", parsed.chat_id);
     detail::read_required(json, "sender_chat_id", parsed.sender_chat_id);
     value = std::move(parsed);

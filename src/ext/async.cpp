@@ -79,8 +79,21 @@ std::optional<Command> parse_command(const Message* message, std::string_view us
 
 } // namespace
 
-AsyncContext::AsyncContext(const AsyncBot& bot, Update update, std::string_view username)
-    : bot_(bot), update_(std::move(update)), command_(parse_command(message(), username)) {}
+AsyncContext::AsyncContext(const AsyncBot& bot, const Update& update, std::string_view username)
+    : AsyncContext(bot, std::make_shared<Update>(update), username) {}
+
+AsyncContext::AsyncContext(const AsyncBot& bot, Update&& update, std::string_view username)
+    : AsyncContext(bot, std::make_shared<Update>(std::move(update)), username) {}
+
+AsyncContext::AsyncContext(const AsyncBot& bot,
+                           std::shared_ptr<const Update> update,
+                           std::string_view username)
+    : bot_(bot), update_(std::move(update)) {
+    if (!update_) {
+        throw std::invalid_argument("update must not be null");
+    }
+    command_ = parse_command(message(), username);
+}
 
 const User* AsyncContext::user() const noexcept {
     if (auto* q = callback_query()) {
@@ -89,38 +102,38 @@ const User* AsyncContext::user() const noexcept {
     if (auto* m = message()) {
         return m->from ? &*m->from : nullptr;
     }
-    if (update_.inline_query) {
-        return &update_.inline_query->from;
+    if (update_->inline_query) {
+        return &update_->inline_query->from;
     }
-    if (update_.chosen_inline_result) {
-        return &update_.chosen_inline_result->from;
+    if (update_->chosen_inline_result) {
+        return &update_->chosen_inline_result->from;
     }
-    if (update_.shipping_query) {
-        return &update_.shipping_query->from;
+    if (update_->shipping_query) {
+        return &update_->shipping_query->from;
     }
-    if (update_.pre_checkout_query) {
-        return &update_.pre_checkout_query->from;
+    if (update_->pre_checkout_query) {
+        return &update_->pre_checkout_query->from;
     }
-    if (update_.chat_member) {
-        return &update_.chat_member->from;
+    if (update_->chat_member) {
+        return &update_->chat_member->from;
     }
-    if (update_.my_chat_member) {
-        return &update_.my_chat_member->from;
+    if (update_->my_chat_member) {
+        return &update_->my_chat_member->from;
     }
-    if (update_.chat_join_request) {
-        return &update_.chat_join_request->from;
+    if (update_->chat_join_request) {
+        return &update_->chat_join_request->from;
     }
     return nullptr;
 }
 
 const Message* AsyncContext::message() const noexcept {
-    for (const auto* item : {&update_.message,
-                             &update_.edited_message,
-                             &update_.channel_post,
-                             &update_.edited_channel_post,
-                             &update_.business_message,
-                             &update_.edited_business_message,
-                             &update_.guest_message}) {
+    for (const auto* item : {&update_->message,
+                             &update_->edited_message,
+                             &update_->channel_post,
+                             &update_->edited_channel_post,
+                             &update_->business_message,
+                             &update_->edited_business_message,
+                             &update_->guest_message}) {
         if (*item) {
             return &**item;
         }
@@ -129,7 +142,7 @@ const Message* AsyncContext::message() const noexcept {
 }
 
 const CallbackQuery* AsyncContext::callback_query() const noexcept {
-    return update_.callback_query ? &*update_.callback_query : nullptr;
+    return update_->callback_query ? &*update_->callback_query : nullptr;
 }
 
 const Chat* AsyncContext::chat() const noexcept {
@@ -144,14 +157,14 @@ const Chat* AsyncContext::chat() const noexcept {
             return &m->chat;
         }
     }
-    if (update_.chat_member) {
-        return &update_.chat_member->chat;
+    if (update_->chat_member) {
+        return &update_->chat_member->chat;
     }
-    if (update_.my_chat_member) {
-        return &update_.my_chat_member->chat;
+    if (update_->my_chat_member) {
+        return &update_->my_chat_member->chat;
     }
-    if (update_.chat_join_request) {
-        return &update_.chat_join_request->chat;
+    if (update_->chat_join_request) {
+        return &update_->chat_join_request->chat;
     }
     return nullptr;
 }
@@ -224,7 +237,7 @@ struct AsyncApplication::State {
     };
 
     struct Job {
-        Update update;
+        std::shared_ptr<Update> update;
         std::optional<UpdateClaim> claim;
         std::function<void(std::exception_ptr, Result)> complete;
     };
@@ -456,7 +469,7 @@ Task<void> AsyncApplication::work(std::shared_ptr<State> state, std::uint64_t ke
 }
 
 Task<Result> AsyncApplication::process_owned(std::shared_ptr<State> state,
-                                             Update update,
+                                             std::shared_ptr<Update> update,
                                              std::optional<UpdateClaim> claim) {
     auto token = asio::use_awaitable;
     co_return co_await asio::async_initiate<decltype(token), void(std::exception_ptr, Result)>(
@@ -482,7 +495,7 @@ Task<Result> AsyncApplication::process_owned(std::shared_ptr<State> state,
                            }
                            std::uint64_t key;
                            try {
-                               key = state->options.key(update);
+                               key = state->options.key(*update);
                            } catch (...) {
                                complete(std::current_exception(), Result::failed);
                                return;
@@ -500,16 +513,22 @@ Task<Result> AsyncApplication::process_owned(std::shared_ptr<State> state,
         token);
 }
 
-Task<Result> AsyncApplication::process(Update update, std::optional<UpdateClaim> claim) {
-    return process_owned(state_, std::move(update), std::move(claim));
+Task<Result> AsyncApplication::process(const Update& update, std::optional<UpdateClaim> claim) {
+    return process_owned(state_, std::make_shared<Update>(update), std::move(claim));
+}
+
+Task<Result> AsyncApplication::process(Update&& update, std::optional<UpdateClaim> claim) {
+    return process_owned(state_, std::make_shared<Update>(std::move(update)), std::move(claim));
 }
 
 std::uint64_t AsyncApplication::ordering_key(const Update& update) const {
     return state_->options.key(update);
 }
 
-Task<Result> AsyncApplication::process_json(Json update) {
-    return process(from_json<Update>(update));
+Task<Result> AsyncApplication::process_json(Json update, std::optional<UpdateClaim> claim) {
+    auto owned = std::make_shared<Update>();
+    Codec<Update>::decode(update, *owned);
+    return process_owned(state_, std::move(owned), std::move(claim));
 }
 
 void AsyncApplication::claim_ingestion(std::string mode) {
@@ -822,8 +841,7 @@ Task<bool> AsyncPolling::process_pending() {
                    });
     std::exception_ptr error;
     try {
-        if (co_await app_.process(from_json<Update>(claim->update.payload), *claim) ==
-            Result::failed) {
+        if (co_await app_.process_json(claim->update.payload, *claim) == Result::failed) {
             throw std::runtime_error("durable handler returned failed");
         }
     } catch (...) {

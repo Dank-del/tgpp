@@ -19,7 +19,8 @@ void decode_object(const Json& json, StoryAreaTypeSuggestedReaction& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    StoryAreaTypeSuggestedReaction parsed{};
+    detail::DecodeStorage<StoryAreaTypeSuggestedReaction> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "suggested_reaction") {
         throw std::invalid_argument("invalid StoryAreaTypeSuggestedReaction.type discriminator");
@@ -44,7 +45,8 @@ void decode_object(const Json& json, StoryAreaTypeUniqueGift& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    StoryAreaTypeUniqueGift parsed{};
+    detail::DecodeStorage<StoryAreaTypeUniqueGift> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "unique_gift") {
         throw std::invalid_argument("invalid StoryAreaTypeUniqueGift.type discriminator");
@@ -69,7 +71,8 @@ void decode_object(const Json& json, StoryAreaTypeWeather& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    StoryAreaTypeWeather parsed{};
+    detail::DecodeStorage<StoryAreaTypeWeather> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "weather") {
         throw std::invalid_argument("invalid StoryAreaTypeWeather.type discriminator");
@@ -102,7 +105,8 @@ void decode_object(const Json& json, SuccessfulPayment& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SuccessfulPayment parsed{};
+    detail::DecodeStorage<SuccessfulPayment> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "currency", parsed.currency);
     detail::read_required(json, "total_amount", parsed.total_amount);
     detail::read_required(json, "invoice_payload", parsed.invoice_payload);
@@ -128,7 +132,8 @@ void decode_object(const Json& json, SuggestedPostApprovalFailed& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SuggestedPostApprovalFailed parsed{};
+    detail::DecodeStorage<SuggestedPostApprovalFailed> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "suggested_post_message", parsed.suggested_post_message);
     detail::read_required(json, "price", parsed.price);
     value = std::move(parsed);
@@ -146,7 +151,8 @@ void decode_object(const Json& json, SuggestedPostApproved& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SuggestedPostApproved parsed{};
+    detail::DecodeStorage<SuggestedPostApproved> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "suggested_post_message", parsed.suggested_post_message);
     detail::read_optional(json, "price", parsed.price);
     detail::read_required(json, "send_date", parsed.send_date);
@@ -164,7 +170,8 @@ void decode_object(const Json& json, SuggestedPostDeclined& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SuggestedPostDeclined parsed{};
+    detail::DecodeStorage<SuggestedPostDeclined> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "suggested_post_message", parsed.suggested_post_message);
     detail::read_optional(json, "comment", parsed.comment);
     value = std::move(parsed);
@@ -182,7 +189,8 @@ void decode_object(const Json& json, SuggestedPostInfo& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SuggestedPostInfo parsed{};
+    detail::DecodeStorage<SuggestedPostInfo> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "state", parsed.state);
     detail::read_optional(json, "price", parsed.price);
     detail::read_optional(json, "send_date", parsed.send_date);
@@ -202,7 +210,8 @@ void decode_object(const Json& json, SuggestedPostPaid& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SuggestedPostPaid parsed{};
+    detail::DecodeStorage<SuggestedPostPaid> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "suggested_post_message", parsed.suggested_post_message);
     detail::read_required(json, "currency", parsed.currency);
     detail::read_optional(json, "amount", parsed.amount);
@@ -221,7 +230,8 @@ void decode_object(const Json& json, SuggestedPostParameters& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SuggestedPostParameters parsed{};
+    detail::DecodeStorage<SuggestedPostParameters> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "price", parsed.price);
     detail::read_optional(json, "send_date", parsed.send_date);
     value = std::move(parsed);
@@ -238,7 +248,8 @@ void decode_object(const Json& json, SuggestedPostPrice& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SuggestedPostPrice parsed{};
+    detail::DecodeStorage<SuggestedPostPrice> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "currency", parsed.currency);
     detail::read_required(json, "amount", parsed.amount);
     value = std::move(parsed);
@@ -255,7 +266,8 @@ void decode_object(const Json& json, SuggestedPostRefunded& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SuggestedPostRefunded parsed{};
+    detail::DecodeStorage<SuggestedPostRefunded> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "suggested_post_message", parsed.suggested_post_message);
     detail::read_required(json, "reason", parsed.reason);
     value = std::move(parsed);
@@ -275,7 +287,8 @@ void decode_object(const Json& json, SwitchInlineQueryChosenChat& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SwitchInlineQueryChosenChat parsed{};
+    detail::DecodeStorage<SwitchInlineQueryChosenChat> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "query", parsed.query);
     detail::read_optional(json, "allow_user_chats", parsed.allow_user_chats);
     detail::read_optional(json, "allow_bot_chats", parsed.allow_bot_chats);
@@ -297,7 +310,8 @@ void decode_object(const Json& json, TextQuote& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    TextQuote parsed{};
+    detail::DecodeStorage<TextQuote> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "text", parsed.text);
     detail::read_optional(json, "entities", parsed.entities);
     detail::read_required(json, "position", parsed.position);
@@ -360,7 +374,8 @@ void decode_object(const Json& json, TransactionPartnerAffiliateProgram& value) 
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    TransactionPartnerAffiliateProgram parsed{};
+    detail::DecodeStorage<TransactionPartnerAffiliateProgram> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "affiliate_program") {
         throw std::invalid_argument(
@@ -386,7 +401,8 @@ void decode_object(const Json& json, TransactionPartnerChat& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    TransactionPartnerChat parsed{};
+    detail::DecodeStorage<TransactionPartnerChat> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "chat") {
         throw std::invalid_argument("invalid TransactionPartnerChat.type discriminator");
@@ -410,7 +426,8 @@ void decode_object(const Json& json, TransactionPartnerFragment& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    TransactionPartnerFragment parsed{};
+    detail::DecodeStorage<TransactionPartnerFragment> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "fragment") {
         throw std::invalid_argument("invalid TransactionPartnerFragment.type discriminator");
@@ -432,7 +449,8 @@ void decode_object(const Json& json, TransactionPartnerOther& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    TransactionPartnerOther parsed{};
+    detail::DecodeStorage<TransactionPartnerOther> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "other") {
         throw std::invalid_argument("invalid TransactionPartnerOther.type discriminator");
@@ -453,7 +471,8 @@ void decode_object(const Json& json, TransactionPartnerTelegramAds& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    TransactionPartnerTelegramAds parsed{};
+    detail::DecodeStorage<TransactionPartnerTelegramAds> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "telegram_ads") {
         throw std::invalid_argument("invalid TransactionPartnerTelegramAds.type discriminator");
@@ -475,7 +494,8 @@ void decode_object(const Json& json, TransactionPartnerTelegramApi& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    TransactionPartnerTelegramApi parsed{};
+    detail::DecodeStorage<TransactionPartnerTelegramApi> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "telegram_api") {
         throw std::invalid_argument("invalid TransactionPartnerTelegramApi.type discriminator");
@@ -507,7 +527,8 @@ void decode_object(const Json& json, TransactionPartnerUser& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    TransactionPartnerUser parsed{};
+    detail::DecodeStorage<TransactionPartnerUser> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "user") {
         throw std::invalid_argument("invalid TransactionPartnerUser.type discriminator");
@@ -546,7 +567,8 @@ void decode_object(const Json& json, UniqueGift& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    UniqueGift parsed{};
+    detail::DecodeStorage<UniqueGift> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "gift_id", parsed.gift_id);
     detail::read_required(json, "base_name", parsed.base_name);
     detail::read_required(json, "name", parsed.name);
@@ -574,7 +596,8 @@ void decode_object(const Json& json, UniqueGiftBackdrop& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    UniqueGiftBackdrop parsed{};
+    detail::DecodeStorage<UniqueGiftBackdrop> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "name", parsed.name);
     detail::read_required(json, "colors", parsed.colors);
     detail::read_required(json, "rarity_per_mille", parsed.rarity_per_mille);
@@ -594,7 +617,8 @@ void decode_object(const Json& json, UniqueGiftBackdropColors& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    UniqueGiftBackdropColors parsed{};
+    detail::DecodeStorage<UniqueGiftBackdropColors> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "center_color", parsed.center_color);
     detail::read_required(json, "edge_color", parsed.edge_color);
     detail::read_required(json, "symbol_color", parsed.symbol_color);

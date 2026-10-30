@@ -16,7 +16,8 @@ void decode_object(const Json& json, PassportFile& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    PassportFile parsed{};
+    detail::DecodeStorage<PassportFile> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "file_id", parsed.file_id);
     detail::read_required(json, "file_unique_id", parsed.file_unique_id);
     detail::read_required(json, "file_size", parsed.file_size);
@@ -38,7 +39,8 @@ void decode_object(const Json& json, PhotoSize& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    PhotoSize parsed{};
+    detail::DecodeStorage<PhotoSize> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "file_id", parsed.file_id);
     detail::read_required(json, "file_unique_id", parsed.file_unique_id);
     detail::read_required(json, "width", parsed.width);
@@ -77,7 +79,8 @@ void decode_object(const Json& json, Poll& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    Poll parsed{};
+    detail::DecodeStorage<Poll> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "id", parsed.id);
     detail::read_required(json, "question", parsed.question);
     detail::read_optional(json, "question_entities", parsed.question_entities);
@@ -116,7 +119,8 @@ void decode_object(const Json& json, PollAnswer& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    PollAnswer parsed{};
+    detail::DecodeStorage<PollAnswer> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "poll_id", parsed.poll_id);
     detail::read_optional(json, "voter_chat", parsed.voter_chat);
     detail::read_optional(json, "user", parsed.user);
@@ -144,7 +148,8 @@ void decode_object(const Json& json, PollMedia& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    PollMedia parsed{};
+    detail::DecodeStorage<PollMedia> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "animation", parsed.animation);
     detail::read_optional(json, "audio", parsed.audio);
     detail::read_optional(json, "document", parsed.document);
@@ -175,7 +180,8 @@ void decode_object(const Json& json, PollOption& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    PollOption parsed{};
+    detail::DecodeStorage<PollOption> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "persistent_id", parsed.persistent_id);
     detail::read_required(json, "text", parsed.text);
     detail::read_optional(json, "text_entities", parsed.text_entities);
@@ -200,7 +206,8 @@ void decode_object(const Json& json, PollOptionAdded& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    PollOptionAdded parsed{};
+    detail::DecodeStorage<PollOptionAdded> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "poll_message", parsed.poll_message);
     detail::read_required(json, "option_persistent_id", parsed.option_persistent_id);
     detail::read_required(json, "option_text", parsed.option_text);
@@ -221,7 +228,8 @@ void decode_object(const Json& json, PollOptionDeleted& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    PollOptionDeleted parsed{};
+    detail::DecodeStorage<PollOptionDeleted> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "poll_message", parsed.poll_message);
     detail::read_required(json, "option_persistent_id", parsed.option_persistent_id);
     detail::read_required(json, "option_text", parsed.option_text);
@@ -245,7 +253,8 @@ void decode_object(const Json& json, PreCheckoutQuery& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    PreCheckoutQuery parsed{};
+    detail::DecodeStorage<PreCheckoutQuery> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "id", parsed.id);
     detail::read_required(json, "from", parsed.from);
     detail::read_required(json, "currency", parsed.currency);
@@ -267,7 +276,8 @@ void decode_object(const Json& json, PreparedInlineMessage& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    PreparedInlineMessage parsed{};
+    detail::DecodeStorage<PreparedInlineMessage> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "id", parsed.id);
     detail::read_required(json, "expiration_date", parsed.expiration_date);
     value = std::move(parsed);
@@ -283,7 +293,8 @@ void decode_object(const Json& json, PreparedKeyboardButton& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    PreparedKeyboardButton parsed{};
+    detail::DecodeStorage<PreparedKeyboardButton> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "id", parsed.id);
     value = std::move(parsed);
 }
@@ -300,7 +311,8 @@ void decode_object(const Json& json, ProximityAlertTriggered& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ProximityAlertTriggered parsed{};
+    detail::DecodeStorage<ProximityAlertTriggered> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "traveler", parsed.traveler);
     detail::read_required(json, "watcher", parsed.watcher);
     detail::read_required(json, "distance", parsed.distance);
@@ -318,7 +330,8 @@ void decode_object(const Json& json, ReactionCount& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ReactionCount parsed{};
+    detail::DecodeStorage<ReactionCount> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     detail::read_required(json, "total_count", parsed.total_count);
     value = std::move(parsed);
@@ -361,7 +374,8 @@ void decode_object(const Json& json, ReactionTypeCustomEmoji& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ReactionTypeCustomEmoji parsed{};
+    detail::DecodeStorage<ReactionTypeCustomEmoji> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "custom_emoji") {
         throw std::invalid_argument("invalid ReactionTypeCustomEmoji.type discriminator");
@@ -384,7 +398,8 @@ void decode_object(const Json& json, ReactionTypeEmoji& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ReactionTypeEmoji parsed{};
+    detail::DecodeStorage<ReactionTypeEmoji> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "emoji") {
         throw std::invalid_argument("invalid ReactionTypeEmoji.type discriminator");
@@ -406,7 +421,8 @@ void decode_object(const Json& json, ReactionTypePaid& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ReactionTypePaid parsed{};
+    detail::DecodeStorage<ReactionTypePaid> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "paid") {
         throw std::invalid_argument("invalid ReactionTypePaid.type discriminator");
@@ -433,7 +449,8 @@ void decode_object(const Json& json, RefundedPayment& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RefundedPayment parsed{};
+    detail::DecodeStorage<RefundedPayment> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "currency", parsed.currency);
     if (parsed.currency != "XTR") {
         throw std::invalid_argument("invalid RefundedPayment.currency discriminator");
@@ -461,7 +478,8 @@ void decode_object(const Json& json, ReplyKeyboardMarkup& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ReplyKeyboardMarkup parsed{};
+    detail::DecodeStorage<ReplyKeyboardMarkup> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "keyboard", parsed.keyboard);
     detail::read_optional(json, "is_persistent", parsed.is_persistent);
     detail::read_optional(json, "resize_keyboard", parsed.resize_keyboard);
@@ -483,7 +501,8 @@ void decode_object(const Json& json, ReplyKeyboardRemove& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ReplyKeyboardRemove parsed{};
+    detail::DecodeStorage<ReplyKeyboardRemove> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "remove_keyboard", parsed.remove_keyboard);
     detail::read_optional(json, "selective", parsed.selective);
     value = std::move(parsed);
@@ -509,7 +528,8 @@ void decode_object(const Json& json, ReplyParameters& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ReplyParameters parsed{};
+    detail::DecodeStorage<ReplyParameters> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "message_id", parsed.message_id);
     detail::read_optional(json, "chat_id", parsed.chat_id);
     detail::read_optional(json, "ephemeral_message_id", parsed.ephemeral_message_id);
@@ -534,7 +554,8 @@ void decode_object(const Json& json, ResponseParameters& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ResponseParameters parsed{};
+    detail::DecodeStorage<ResponseParameters> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "migrate_to_chat_id", parsed.migrate_to_chat_id);
     detail::read_optional(json, "retry_after", parsed.retry_after);
     value = std::move(parsed);
@@ -576,7 +597,8 @@ void decode_object(const Json& json, RevenueWithdrawalStateFailed& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RevenueWithdrawalStateFailed parsed{};
+    detail::DecodeStorage<RevenueWithdrawalStateFailed> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "failed") {
         throw std::invalid_argument("invalid RevenueWithdrawalStateFailed.type discriminator");
@@ -597,7 +619,8 @@ void decode_object(const Json& json, RevenueWithdrawalStatePending& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RevenueWithdrawalStatePending parsed{};
+    detail::DecodeStorage<RevenueWithdrawalStatePending> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "pending") {
         throw std::invalid_argument("invalid RevenueWithdrawalStatePending.type discriminator");

@@ -5,6 +5,28 @@
 #include <type_traits>
 
 namespace tgpp {
+namespace detail {
+// Keep small decoders allocation-free while large generated aggregate
+// scratch values use heap storage on platforms with 512-KiB worker stacks.
+template <class T, bool Large = (sizeof(T) > 8 * 1024)> class DecodeStorage {
+    T value_{};
+
+  public:
+    T& value() noexcept {
+        return value_;
+    }
+};
+
+template <class T> class DecodeStorage<T, true> {
+    std::unique_ptr<T> value_ = std::make_unique<T>();
+
+  public:
+    T& value() noexcept {
+        return *value_;
+    }
+};
+} // namespace detail
+
 template <class T, class = void> struct Codec {
     static Json encode(const T& value, Request* request) {
         return encode_object(value, request);
@@ -74,9 +96,9 @@ template <class T> struct Codec<Box<T>> {
     }
 
     static void decode(const Json& json, Box<T>& value) {
-        T item{};
-        Codec<T>::decode(json, item);
-        value = Box<T>(std::move(item));
+        detail::DecodeStorage<T> item;
+        Codec<T>::decode(json, item.value());
+        value = Box<T>(std::move(item.value()));
     }
 };
 
@@ -90,9 +112,9 @@ template <class T> struct Codec<std::optional<T>> {
             value.reset();
             return;
         }
-        T item{};
-        Codec<T>::decode(json, item);
-        value = std::move(item);
+        detail::DecodeStorage<T> item;
+        Codec<T>::decode(json, item.value());
+        value = std::move(item.value());
     }
 };
 
@@ -112,9 +134,17 @@ template <class T> struct Codec<std::vector<T>> {
         std::vector<T> items;
         items.reserve(json.size());
         for (const auto& entry : json) {
-            T item{};
-            Codec<T>::decode(entry, item);
-            items.push_back(std::move(item));
+            if constexpr (std::is_same_v<T, bool>) {
+                // vector<bool> exposes a proxy rather than a bool reference.
+                bool item{};
+                Codec<bool>::decode(entry, item);
+                items.push_back(item);
+            } else {
+                // Large generated values (Update is >230 KiB) must be decoded
+                // directly in vector-owned heap storage on small thread stacks.
+                items.emplace_back();
+                Codec<T>::decode(entry, items.back());
+            }
         }
         value = std::move(items);
     }
@@ -136,16 +166,17 @@ template <class... Ts> struct Codec<std::variant<Ts...>> {
             throw std::invalid_argument("JSON does not match any union alternative");
         } else {
             using T = std::variant_alternative_t<I, Variant>;
-            std::optional<T> candidate;
+            std::optional<detail::DecodeStorage<T>> candidate;
             try {
-                T item{};
-                Codec<T>::decode(json, item);
-                candidate = std::move(item);
+                candidate.emplace();
+                Codec<T>::decode(json, candidate->value());
             } catch (const std::invalid_argument&) {
+                candidate.reset();
             } catch (const nlohmann::json::exception&) {
+                candidate.reset();
             }
             if (candidate) {
-                value.template emplace<I>(std::move(*candidate));
+                value.template emplace<I>(std::move(candidate->value()));
             } else {
                 choose<I + 1>(json, value);
             }

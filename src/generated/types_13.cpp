@@ -18,7 +18,8 @@ void decode_object(const Json& json, RichTextReferenceLink& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RichTextReferenceLink parsed{};
+    detail::DecodeStorage<RichTextReferenceLink> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "reference_link") {
         throw std::invalid_argument("invalid RichTextReferenceLink.type discriminator");
@@ -42,7 +43,8 @@ void decode_object(const Json& json, RichTextSpoiler& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RichTextSpoiler parsed{};
+    detail::DecodeStorage<RichTextSpoiler> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "spoiler") {
         throw std::invalid_argument("invalid RichTextSpoiler.type discriminator");
@@ -65,7 +67,8 @@ void decode_object(const Json& json, RichTextStrikethrough& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RichTextStrikethrough parsed{};
+    detail::DecodeStorage<RichTextStrikethrough> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "strikethrough") {
         throw std::invalid_argument("invalid RichTextStrikethrough.type discriminator");
@@ -88,7 +91,8 @@ void decode_object(const Json& json, RichTextSubscript& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RichTextSubscript parsed{};
+    detail::DecodeStorage<RichTextSubscript> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "subscript") {
         throw std::invalid_argument("invalid RichTextSubscript.type discriminator");
@@ -111,7 +115,8 @@ void decode_object(const Json& json, RichTextSuperscript& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RichTextSuperscript parsed{};
+    detail::DecodeStorage<RichTextSuperscript> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "superscript") {
         throw std::invalid_argument("invalid RichTextSuperscript.type discriminator");
@@ -135,7 +140,8 @@ void decode_object(const Json& json, RichTextTextMention& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RichTextTextMention parsed{};
+    detail::DecodeStorage<RichTextTextMention> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "text_mention") {
         throw std::invalid_argument("invalid RichTextTextMention.type discriminator");
@@ -159,7 +165,8 @@ void decode_object(const Json& json, RichTextUnderline& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RichTextUnderline parsed{};
+    detail::DecodeStorage<RichTextUnderline> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "underline") {
         throw std::invalid_argument("invalid RichTextUnderline.type discriminator");
@@ -183,7 +190,8 @@ void decode_object(const Json& json, RichTextUrl& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    RichTextUrl parsed{};
+    detail::DecodeStorage<RichTextUrl> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "url") {
         throw std::invalid_argument("invalid RichTextUrl.type discriminator");
@@ -203,7 +211,8 @@ void decode_object(const Json& json, SentGuestMessage& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SentGuestMessage parsed{};
+    detail::DecodeStorage<SentGuestMessage> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "inline_message_id", parsed.inline_message_id);
     value = std::move(parsed);
 }
@@ -218,7 +227,8 @@ void decode_object(const Json& json, SentWebAppMessage& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SentWebAppMessage parsed{};
+    detail::DecodeStorage<SentWebAppMessage> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "inline_message_id", parsed.inline_message_id);
     value = std::move(parsed);
 }
@@ -237,7 +247,8 @@ void decode_object(const Json& json, SharedUser& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SharedUser parsed{};
+    detail::DecodeStorage<SharedUser> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "user_id", parsed.user_id);
     detail::read_optional(json, "first_name", parsed.first_name);
     detail::read_optional(json, "last_name", parsed.last_name);
@@ -261,7 +272,8 @@ void decode_object(const Json& json, ShippingAddress& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ShippingAddress parsed{};
+    detail::DecodeStorage<ShippingAddress> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "country_code", parsed.country_code);
     detail::read_required(json, "state", parsed.state);
     detail::read_required(json, "city", parsed.city);
@@ -283,7 +295,8 @@ void decode_object(const Json& json, ShippingOption& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ShippingOption parsed{};
+    detail::DecodeStorage<ShippingOption> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "id", parsed.id);
     detail::read_required(json, "title", parsed.title);
     detail::read_required(json, "prices", parsed.prices);
@@ -303,7 +316,8 @@ void decode_object(const Json& json, ShippingQuery& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ShippingQuery parsed{};
+    detail::DecodeStorage<ShippingQuery> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "id", parsed.id);
     detail::read_required(json, "from", parsed.from);
     detail::read_required(json, "invoice_payload", parsed.invoice_payload);
@@ -322,7 +336,8 @@ void decode_object(const Json& json, StarAmount& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    StarAmount parsed{};
+    detail::DecodeStorage<StarAmount> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "amount", parsed.amount);
     detail::read_optional(json, "nanostar_amount", parsed.nanostar_amount);
     value = std::move(parsed);
@@ -343,7 +358,8 @@ void decode_object(const Json& json, StarTransaction& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    StarTransaction parsed{};
+    detail::DecodeStorage<StarTransaction> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "id", parsed.id);
     detail::read_required(json, "amount", parsed.amount);
     detail::read_optional(json, "nanostar_amount", parsed.nanostar_amount);
@@ -363,7 +379,8 @@ void decode_object(const Json& json, StarTransactions& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    StarTransactions parsed{};
+    detail::DecodeStorage<StarTransactions> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "transactions", parsed.transactions);
     value = std::move(parsed);
 }
@@ -392,7 +409,8 @@ void decode_object(const Json& json, Sticker& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    Sticker parsed{};
+    detail::DecodeStorage<Sticker> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "file_id", parsed.file_id);
     detail::read_required(json, "file_unique_id", parsed.file_unique_id);
     detail::read_required(json, "type", parsed.type);
@@ -425,7 +443,8 @@ void decode_object(const Json& json, StickerSet& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    StickerSet parsed{};
+    detail::DecodeStorage<StickerSet> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "name", parsed.name);
     detail::read_required(json, "title", parsed.title);
     detail::read_required(json, "sticker_type", parsed.sticker_type);
@@ -445,7 +464,8 @@ void decode_object(const Json& json, Story& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    Story parsed{};
+    detail::DecodeStorage<Story> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat", parsed.chat);
     detail::read_required(json, "id", parsed.id);
     value = std::move(parsed);
@@ -462,7 +482,8 @@ void decode_object(const Json& json, StoryArea& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    StoryArea parsed{};
+    detail::DecodeStorage<StoryArea> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "position", parsed.position);
     detail::read_required(json, "type", parsed.type);
     value = std::move(parsed);
@@ -483,7 +504,8 @@ void decode_object(const Json& json, StoryAreaPosition& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    StoryAreaPosition parsed{};
+    detail::DecodeStorage<StoryAreaPosition> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "x_percentage", parsed.x_percentage);
     detail::read_required(json, "y_percentage", parsed.y_percentage);
     detail::read_required(json, "width_percentage", parsed.width_percentage);
@@ -538,7 +560,8 @@ void decode_object(const Json& json, StoryAreaTypeLink& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    StoryAreaTypeLink parsed{};
+    detail::DecodeStorage<StoryAreaTypeLink> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "link") {
         throw std::invalid_argument("invalid StoryAreaTypeLink.type discriminator");
@@ -563,7 +586,8 @@ void decode_object(const Json& json, StoryAreaTypeLocation& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    StoryAreaTypeLocation parsed{};
+    detail::DecodeStorage<StoryAreaTypeLocation> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "location") {
         throw std::invalid_argument("invalid StoryAreaTypeLocation.type discriminator");

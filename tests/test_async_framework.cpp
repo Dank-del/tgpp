@@ -5,6 +5,9 @@
 #include <iostream>
 #include <mutex>
 #include <tgpp/ext/async.hpp>
+#if defined(__GLIBC__) && defined(__linux__)
+#include <pthread.h>
+#endif
 using namespace tgpp;
 using namespace tgpp::ext;
 
@@ -287,11 +290,20 @@ void batch_checkpoint_prefix() {
 
         Task<Json> perform(Request) override {
             ++calls;
-            co_return Json{
-                {"ok", true},
-                {"result",
-                 Json::array(
-                     {to_json(update(1, 1)), to_json(update(2, 2)), to_json(update(3, 3))})}};
+            Json batch = Json::array();
+            for (int id = 1; id <= 3; ++id) {
+                auto item = std::make_unique<Update>();
+                item->update_id = id;
+                item->message.emplace();
+                auto& message = *item->message;
+                message.message_id = id;
+                message.date = 1;
+                message.chat.id = id;
+                message.chat.type = "private";
+                message.text = "hello";
+                batch.push_back(to_json(*item));
+            }
+            co_return Json{{"ok", true}, {"result", std::move(batch)}};
         }
     };
 
@@ -403,6 +415,17 @@ void durable_session_completion() {
 
 int main() {
     try {
+#if defined(__GLIBC__) && defined(__linux__)
+        // macOS workers have 512-KiB stacks. Exercise that limit on Linux too,
+        // while preserving the main thread's normal stack for fixture setup.
+        pthread_attr_t attributes;
+        require(pthread_attr_init(&attributes) == 0, "could not initialize worker attributes");
+        const int sized = pthread_attr_setstacksize(&attributes, 512 * 1024);
+        const int configured = sized ? 0 : pthread_setattr_default_np(&attributes);
+        const int destroyed = pthread_attr_destroy(&attributes);
+        require(sized == 0 && configured == 0 && destroyed == 0,
+                "could not configure 512-KiB regression worker stacks");
+#endif
         ordering();
         failures();
         retry_and_checkpoint();
@@ -414,6 +437,7 @@ int main() {
         overload_bound();
         durable_session_completion();
         std::cout << "async framework tests passed\n";
+        return 0;
     } catch (const std::exception& e) {
         std::cerr << e.what() << '\n';
         return 1;

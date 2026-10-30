@@ -22,7 +22,8 @@ void decode_object(const Json& json, Giveaway& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    Giveaway parsed{};
+    detail::DecodeStorage<Giveaway> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chats", parsed.chats);
     detail::read_required(json, "winners_selection_date", parsed.winners_selection_date);
     detail::read_required(json, "winner_count", parsed.winner_count);
@@ -49,7 +50,8 @@ void decode_object(const Json& json, GiveawayCompleted& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    GiveawayCompleted parsed{};
+    detail::DecodeStorage<GiveawayCompleted> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "winner_count", parsed.winner_count);
     detail::read_optional(json, "unclaimed_prize_count", parsed.unclaimed_prize_count);
     detail::read_optional(json, "giveaway_message", parsed.giveaway_message);
@@ -67,7 +69,8 @@ void decode_object(const Json& json, GiveawayCreated& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    GiveawayCreated parsed{};
+    detail::DecodeStorage<GiveawayCreated> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "prize_star_count", parsed.prize_star_count);
     value = std::move(parsed);
 }
@@ -94,7 +97,8 @@ void decode_object(const Json& json, GiveawayWinners& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    GiveawayWinners parsed{};
+    detail::DecodeStorage<GiveawayWinners> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat", parsed.chat);
     detail::read_required(json, "giveaway_message_id", parsed.giveaway_message_id);
     detail::read_required(json, "winners_selection_date", parsed.winners_selection_date);
@@ -123,7 +127,8 @@ void decode_object(const Json& json, InaccessibleMessage& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    InaccessibleMessage parsed{};
+    detail::DecodeStorage<InaccessibleMessage> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat", parsed.chat);
     detail::read_required(json, "message_id", parsed.message_id);
     detail::read_required(json, "date", parsed.date);
@@ -155,7 +160,8 @@ void decode_object(const Json& json, InlineKeyboardButton& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    InlineKeyboardButton parsed{};
+    detail::DecodeStorage<InlineKeyboardButton> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "text", parsed.text);
     detail::read_optional(json, "icon_custom_emoji_id", parsed.icon_custom_emoji_id);
     detail::read_optional(json, "style", parsed.style);
@@ -186,7 +192,8 @@ void decode_object(const Json& json, InlineKeyboardMarkup& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    InlineKeyboardMarkup parsed{};
+    detail::DecodeStorage<InlineKeyboardMarkup> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "inline_keyboard", parsed.inline_keyboard);
     detail::read_optional(json, "force_reply", parsed.force_reply);
     value = std::move(parsed);
@@ -207,7 +214,8 @@ void decode_object(const Json& json, InlineQuery& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    InlineQuery parsed{};
+    detail::DecodeStorage<InlineQuery> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "id", parsed.id);
     detail::read_required(json, "from", parsed.from);
     detail::read_required(json, "query", parsed.query);
@@ -390,7 +398,8 @@ void decode_object(const Json& json, InlineQueryResultArticle& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    InlineQueryResultArticle parsed{};
+    detail::DecodeStorage<InlineQueryResultArticle> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "article") {
         throw std::invalid_argument("invalid InlineQueryResultArticle.type discriminator");
@@ -430,7 +439,8 @@ void decode_object(const Json& json, InlineQueryResultAudio& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    InlineQueryResultAudio parsed{};
+    detail::DecodeStorage<InlineQueryResultAudio> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "audio") {
         throw std::invalid_argument("invalid InlineQueryResultAudio.type discriminator");
@@ -468,7 +478,8 @@ void decode_object(const Json& json, InlineQueryResultCachedAudio& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    InlineQueryResultCachedAudio parsed{};
+    detail::DecodeStorage<InlineQueryResultCachedAudio> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "audio") {
         throw std::invalid_argument("invalid InlineQueryResultCachedAudio.type discriminator");
@@ -505,7 +516,8 @@ void decode_object(const Json& json, InlineQueryResultCachedDocument& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    InlineQueryResultCachedDocument parsed{};
+    detail::DecodeStorage<InlineQueryResultCachedDocument> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "document") {
         throw std::invalid_argument("invalid InlineQueryResultCachedDocument.type discriminator");
@@ -544,7 +556,8 @@ void decode_object(const Json& json, InlineQueryResultCachedGif& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    InlineQueryResultCachedGif parsed{};
+    detail::DecodeStorage<InlineQueryResultCachedGif> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "gif") {
         throw std::invalid_argument("invalid InlineQueryResultCachedGif.type discriminator");
@@ -583,7 +596,8 @@ void decode_object(const Json& json, InlineQueryResultCachedMpeg4Gif& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    InlineQueryResultCachedMpeg4Gif parsed{};
+    detail::DecodeStorage<InlineQueryResultCachedMpeg4Gif> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "mpeg4_gif") {
         throw std::invalid_argument("invalid InlineQueryResultCachedMpeg4Gif.type discriminator");
@@ -623,7 +637,8 @@ void decode_object(const Json& json, InlineQueryResultCachedPhoto& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    InlineQueryResultCachedPhoto parsed{};
+    detail::DecodeStorage<InlineQueryResultCachedPhoto> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "photo") {
         throw std::invalid_argument("invalid InlineQueryResultCachedPhoto.type discriminator");
@@ -658,7 +673,8 @@ void decode_object(const Json& json, InlineQueryResultCachedSticker& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    InlineQueryResultCachedSticker parsed{};
+    detail::DecodeStorage<InlineQueryResultCachedSticker> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "sticker") {
         throw std::invalid_argument("invalid InlineQueryResultCachedSticker.type discriminator");
@@ -693,7 +709,8 @@ void decode_object(const Json& json, InlineQueryResultCachedVideo& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    InlineQueryResultCachedVideo parsed{};
+    detail::DecodeStorage<InlineQueryResultCachedVideo> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "video") {
         throw std::invalid_argument("invalid InlineQueryResultCachedVideo.type discriminator");
@@ -732,7 +749,8 @@ void decode_object(const Json& json, InlineQueryResultCachedVoice& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    InlineQueryResultCachedVoice parsed{};
+    detail::DecodeStorage<InlineQueryResultCachedVoice> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "voice") {
         throw std::invalid_argument("invalid InlineQueryResultCachedVoice.type discriminator");
@@ -771,7 +789,8 @@ void decode_object(const Json& json, InlineQueryResultContact& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    InlineQueryResultContact parsed{};
+    detail::DecodeStorage<InlineQueryResultContact> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "contact") {
         throw std::invalid_argument("invalid InlineQueryResultContact.type discriminator");
@@ -815,7 +834,8 @@ void decode_object(const Json& json, InlineQueryResultDocument& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    InlineQueryResultDocument parsed{};
+    detail::DecodeStorage<InlineQueryResultDocument> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "document") {
         throw std::invalid_argument("invalid InlineQueryResultDocument.type discriminator");
@@ -852,7 +872,8 @@ void decode_object(const Json& json, InlineQueryResultGame& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    InlineQueryResultGame parsed{};
+    detail::DecodeStorage<InlineQueryResultGame> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "game") {
         throw std::invalid_argument("invalid InlineQueryResultGame.type discriminator");
@@ -890,7 +911,8 @@ void decode_object(const Json& json, InlineQueryResultGif& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    InlineQueryResultGif parsed{};
+    detail::DecodeStorage<InlineQueryResultGif> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "gif") {
         throw std::invalid_argument("invalid InlineQueryResultGif.type discriminator");
@@ -938,7 +960,8 @@ void decode_object(const Json& json, InlineQueryResultLocation& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    InlineQueryResultLocation parsed{};
+    detail::DecodeStorage<InlineQueryResultLocation> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "location") {
         throw std::invalid_argument("invalid InlineQueryResultLocation.type discriminator");
@@ -986,7 +1009,8 @@ void decode_object(const Json& json, InlineQueryResultMpeg4Gif& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    InlineQueryResultMpeg4Gif parsed{};
+    detail::DecodeStorage<InlineQueryResultMpeg4Gif> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "mpeg4_gif") {
         throw std::invalid_argument("invalid InlineQueryResultMpeg4Gif.type discriminator");

@@ -25,7 +25,9 @@ class WebhookServer {
     std::shared_ptr<State> state_;
 
   public:
-    using Receiver = std::function<Task<void>(Update)>;
+    // The server owns this update until the returned task completes. Prefer a
+    // const-reference callback to avoid large generated Update copies.
+    using Receiver = std::function<Task<void>(const Update&)>;
     WebhookServer(asio::any_io_executor executor, WebhookOptions options, Receiver receiver);
     WebhookServer(asio::any_io_executor executor, WebhookOptions options, AsyncApplication& app);
     ~WebhookServer();

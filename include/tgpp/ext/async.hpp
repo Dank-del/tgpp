@@ -9,15 +9,19 @@
 namespace tgpp::ext {
 class AsyncContext {
     const AsyncBot& bot_;
-    Update update_;
+    std::shared_ptr<const Update> update_;
     std::optional<Command> command_;
     std::string handler_;
     std::unordered_map<std::type_index, std::any> data_;
     friend class AsyncApplication;
     friend class AsyncRouter;
+    AsyncContext(const AsyncBot& bot,
+                 std::shared_ptr<const Update> update,
+                 std::string_view username);
 
   public:
-    AsyncContext(const AsyncBot& bot, Update update, std::string_view username = {});
+    AsyncContext(const AsyncBot& bot, const Update& update, std::string_view username = {});
+    AsyncContext(const AsyncBot& bot, Update&& update, std::string_view username = {});
 
     const std::optional<Command>& command() const noexcept {
         return command_;
@@ -30,7 +34,7 @@ class AsyncContext {
     }
 
     const Update& update() const noexcept {
-        return update_;
+        return *update_;
     }
 
     const Message* message() const noexcept;
@@ -188,7 +192,8 @@ class AsyncApplication {
     static Task<Result> invoke(std::shared_ptr<State>, AsyncContext&, std::size_t);
     static Task<void> work(std::shared_ptr<State>, std::uint64_t);
     static void pump(const std::shared_ptr<State>&);
-    static Task<Result> process_owned(std::shared_ptr<State>, Update, std::optional<UpdateClaim>);
+    static Task<Result>
+        process_owned(std::shared_ptr<State>, std::shared_ptr<Update>, std::optional<UpdateClaim>);
     friend class AsyncRouter;
     void add_result(std::string, AsyncFilter, std::function<Task<Result>(AsyncContext&)>);
 
@@ -205,9 +210,10 @@ class AsyncApplication {
     void on_error(AsyncErrorHandler);
     void install(std::shared_ptr<AsyncModule>);
     void include(std::shared_ptr<AsyncRouter>);
-    Task<Result> process(Update update, std::optional<UpdateClaim> claim = {});
+    Task<Result> process(const Update& update, std::optional<UpdateClaim> claim = {});
+    Task<Result> process(Update&& update, std::optional<UpdateClaim> claim = {});
     std::uint64_t ordering_key(const Update& update) const;
-    Task<Result> process_json(Json update);
+    Task<Result> process_json(Json update, std::optional<UpdateClaim> claim = {});
     void request_stop();
     void claim_ingestion(std::string mode);
     Task<void> shutdown(std::chrono::milliseconds grace = std::chrono::seconds(30));

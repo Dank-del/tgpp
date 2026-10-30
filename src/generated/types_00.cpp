@@ -17,7 +17,8 @@ void decode_object(const Json& json, AcceptedGiftTypes& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    AcceptedGiftTypes parsed{};
+    detail::DecodeStorage<AcceptedGiftTypes> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "unlimited_gifts", parsed.unlimited_gifts);
     detail::read_required(json, "limited_gifts", parsed.limited_gifts);
     detail::read_required(json, "unique_gifts", parsed.unique_gifts);
@@ -40,7 +41,8 @@ void decode_object(const Json& json, AffiliateInfo& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    AffiliateInfo parsed{};
+    detail::DecodeStorage<AffiliateInfo> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "affiliate_user", parsed.affiliate_user);
     detail::read_optional(json, "affiliate_chat", parsed.affiliate_chat);
     detail::read_required(json, "commission_per_mille", parsed.commission_per_mille);
@@ -67,7 +69,8 @@ void decode_object(const Json& json, Animation& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    Animation parsed{};
+    detail::DecodeStorage<Animation> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "file_id", parsed.file_id);
     detail::read_required(json, "file_unique_id", parsed.file_unique_id);
     detail::read_required(json, "width", parsed.width);
@@ -98,7 +101,8 @@ void decode_object(const Json& json, Audio& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    Audio parsed{};
+    detail::DecodeStorage<Audio> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "file_id", parsed.file_id);
     detail::read_required(json, "file_unique_id", parsed.file_unique_id);
     detail::read_required(json, "duration", parsed.duration);
@@ -148,7 +152,8 @@ void decode_object(const Json& json, BackgroundFillFreeformGradient& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    BackgroundFillFreeformGradient parsed{};
+    detail::DecodeStorage<BackgroundFillFreeformGradient> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "freeform_gradient") {
         throw std::invalid_argument("invalid BackgroundFillFreeformGradient.type discriminator");
@@ -173,7 +178,8 @@ void decode_object(const Json& json, BackgroundFillGradient& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    BackgroundFillGradient parsed{};
+    detail::DecodeStorage<BackgroundFillGradient> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "gradient") {
         throw std::invalid_argument("invalid BackgroundFillGradient.type discriminator");
@@ -198,7 +204,8 @@ void decode_object(const Json& json, BackgroundFillSolid& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    BackgroundFillSolid parsed{};
+    detail::DecodeStorage<BackgroundFillSolid> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "solid") {
         throw std::invalid_argument("invalid BackgroundFillSolid.type discriminator");
@@ -248,7 +255,8 @@ void decode_object(const Json& json, BackgroundTypeChatTheme& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    BackgroundTypeChatTheme parsed{};
+    detail::DecodeStorage<BackgroundTypeChatTheme> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "chat_theme") {
         throw std::invalid_argument("invalid BackgroundTypeChatTheme.type discriminator");
@@ -272,7 +280,8 @@ void decode_object(const Json& json, BackgroundTypeFill& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    BackgroundTypeFill parsed{};
+    detail::DecodeStorage<BackgroundTypeFill> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "fill") {
         throw std::invalid_argument("invalid BackgroundTypeFill.type discriminator");
@@ -300,7 +309,8 @@ void decode_object(const Json& json, BackgroundTypePattern& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    BackgroundTypePattern parsed{};
+    detail::DecodeStorage<BackgroundTypePattern> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "pattern") {
         throw std::invalid_argument("invalid BackgroundTypePattern.type discriminator");
@@ -330,7 +340,8 @@ void decode_object(const Json& json, BackgroundTypeWallpaper& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    BackgroundTypeWallpaper parsed{};
+    detail::DecodeStorage<BackgroundTypeWallpaper> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "wallpaper") {
         throw std::invalid_argument("invalid BackgroundTypeWallpaper.type discriminator");
@@ -354,7 +365,8 @@ void decode_object(const Json& json, Birthdate& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    Birthdate parsed{};
+    detail::DecodeStorage<Birthdate> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "day", parsed.day);
     detail::read_required(json, "month", parsed.month);
     detail::read_optional(json, "year", parsed.year);
@@ -372,7 +384,8 @@ void decode_object(const Json& json, BotAccessSettings& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    BotAccessSettings parsed{};
+    detail::DecodeStorage<BotAccessSettings> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "is_access_restricted", parsed.is_access_restricted);
     detail::read_optional(json, "added_users", parsed.added_users);
     value = std::move(parsed);
@@ -390,7 +403,8 @@ void decode_object(const Json& json, BotCommand& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    BotCommand parsed{};
+    detail::DecodeStorage<BotCommand> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "command", parsed.command);
     detail::read_required(json, "description", parsed.description);
     detail::read_optional(json, "is_ephemeral", parsed.is_ephemeral);
@@ -450,7 +464,8 @@ void decode_object(const Json& json, BotCommandScopeAllChatAdministrators& value
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    BotCommandScopeAllChatAdministrators parsed{};
+    detail::DecodeStorage<BotCommandScopeAllChatAdministrators> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "all_chat_administrators") {
         throw std::invalid_argument(
@@ -472,7 +487,8 @@ void decode_object(const Json& json, BotCommandScopeAllGroupChats& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    BotCommandScopeAllGroupChats parsed{};
+    detail::DecodeStorage<BotCommandScopeAllGroupChats> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "all_group_chats") {
         throw std::invalid_argument("invalid BotCommandScopeAllGroupChats.type discriminator");
@@ -493,7 +509,8 @@ void decode_object(const Json& json, BotCommandScopeAllPrivateChats& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    BotCommandScopeAllPrivateChats parsed{};
+    detail::DecodeStorage<BotCommandScopeAllPrivateChats> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "all_private_chats") {
         throw std::invalid_argument("invalid BotCommandScopeAllPrivateChats.type discriminator");
@@ -515,7 +532,8 @@ void decode_object(const Json& json, BotCommandScopeChat& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    BotCommandScopeChat parsed{};
+    detail::DecodeStorage<BotCommandScopeChat> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "chat") {
         throw std::invalid_argument("invalid BotCommandScopeChat.type discriminator");
@@ -538,7 +556,8 @@ void decode_object(const Json& json, BotCommandScopeChatAdministrators& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    BotCommandScopeChatAdministrators parsed{};
+    detail::DecodeStorage<BotCommandScopeChatAdministrators> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "chat_administrators") {
         throw std::invalid_argument("invalid BotCommandScopeChatAdministrators.type discriminator");
@@ -562,7 +581,8 @@ void decode_object(const Json& json, BotCommandScopeChatMember& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    BotCommandScopeChatMember parsed{};
+    detail::DecodeStorage<BotCommandScopeChatMember> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "chat_member") {
         throw std::invalid_argument("invalid BotCommandScopeChatMember.type discriminator");
@@ -585,7 +605,8 @@ void decode_object(const Json& json, BotCommandScopeDefault& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    BotCommandScopeDefault parsed{};
+    detail::DecodeStorage<BotCommandScopeDefault> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "type", parsed.type);
     if (parsed.type != "default") {
         throw std::invalid_argument("invalid BotCommandScopeDefault.type discriminator");
@@ -603,7 +624,8 @@ void decode_object(const Json& json, BotDescription& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    BotDescription parsed{};
+    detail::DecodeStorage<BotDescription> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "description", parsed.description);
     value = std::move(parsed);
 }

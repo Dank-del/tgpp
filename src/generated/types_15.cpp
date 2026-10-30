@@ -18,7 +18,8 @@ void decode_object(const Json& json, UniqueGiftColors& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    UniqueGiftColors parsed{};
+    detail::DecodeStorage<UniqueGiftColors> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "model_custom_emoji_id", parsed.model_custom_emoji_id);
     detail::read_required(json, "symbol_custom_emoji_id", parsed.symbol_custom_emoji_id);
     detail::read_required(json, "light_theme_main_color", parsed.light_theme_main_color);
@@ -47,7 +48,8 @@ void decode_object(const Json& json, UniqueGiftInfo& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    UniqueGiftInfo parsed{};
+    detail::DecodeStorage<UniqueGiftInfo> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "gift", parsed.gift);
     detail::read_required(json, "origin", parsed.origin);
     detail::read_optional(json, "text", parsed.text);
@@ -74,7 +76,8 @@ void decode_object(const Json& json, UniqueGiftModel& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    UniqueGiftModel parsed{};
+    detail::DecodeStorage<UniqueGiftModel> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "name", parsed.name);
     detail::read_required(json, "sticker", parsed.sticker);
     detail::read_required(json, "rarity_per_mille", parsed.rarity_per_mille);
@@ -94,7 +97,8 @@ void decode_object(const Json& json, UniqueGiftSymbol& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    UniqueGiftSymbol parsed{};
+    detail::DecodeStorage<UniqueGiftSymbol> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "name", parsed.name);
     detail::read_required(json, "sticker", parsed.sticker);
     detail::read_required(json, "rarity_per_mille", parsed.rarity_per_mille);
@@ -140,7 +144,8 @@ void decode_object(const Json& json, Update& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    Update parsed{};
+    detail::DecodeStorage<Update> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "update_id", parsed.update_id);
     detail::read_optional(json, "message", parsed.message);
     detail::read_optional(json, "edited_message", parsed.edited_message);
@@ -202,7 +207,8 @@ void decode_object(const Json& json, User& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    User parsed{};
+    detail::DecodeStorage<User> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "id", parsed.id);
     detail::read_required(json, "is_bot", parsed.is_bot);
     detail::read_required(json, "first_name", parsed.first_name);
@@ -236,7 +242,8 @@ void decode_object(const Json& json, UserChatBoosts& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    UserChatBoosts parsed{};
+    detail::DecodeStorage<UserChatBoosts> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "boosts", parsed.boosts);
     value = std::move(parsed);
 }
@@ -252,7 +259,8 @@ void decode_object(const Json& json, UserProfileAudios& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    UserProfileAudios parsed{};
+    detail::DecodeStorage<UserProfileAudios> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "total_count", parsed.total_count);
     detail::read_required(json, "audios", parsed.audios);
     value = std::move(parsed);
@@ -269,7 +277,8 @@ void decode_object(const Json& json, UserProfilePhotos& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    UserProfilePhotos parsed{};
+    detail::DecodeStorage<UserProfilePhotos> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "total_count", parsed.total_count);
     detail::read_required(json, "photos", parsed.photos);
     value = std::move(parsed);
@@ -288,7 +297,8 @@ void decode_object(const Json& json, UserRating& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    UserRating parsed{};
+    detail::DecodeStorage<UserRating> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "level", parsed.level);
     detail::read_required(json, "rating", parsed.rating);
     detail::read_required(json, "current_level_rating", parsed.current_level_rating);
@@ -307,7 +317,8 @@ void decode_object(const Json& json, UsersShared& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    UsersShared parsed{};
+    detail::DecodeStorage<UsersShared> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "request_id", parsed.request_id);
     detail::read_required(json, "users", parsed.users);
     value = std::move(parsed);
@@ -329,7 +340,8 @@ void decode_object(const Json& json, Venue& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    Venue parsed{};
+    detail::DecodeStorage<Venue> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "location", parsed.location);
     detail::read_required(json, "title", parsed.title);
     detail::read_required(json, "address", parsed.address);
@@ -361,7 +373,8 @@ void decode_object(const Json& json, Video& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    Video parsed{};
+    detail::DecodeStorage<Video> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "file_id", parsed.file_id);
     detail::read_required(json, "file_unique_id", parsed.file_unique_id);
     detail::read_required(json, "width", parsed.width);
@@ -387,7 +400,8 @@ void decode_object(const Json& json, VideoChatEnded& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    VideoChatEnded parsed{};
+    detail::DecodeStorage<VideoChatEnded> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "duration", parsed.duration);
     value = std::move(parsed);
 }
@@ -402,7 +416,8 @@ void decode_object(const Json& json, VideoChatParticipantsInvited& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    VideoChatParticipantsInvited parsed{};
+    detail::DecodeStorage<VideoChatParticipantsInvited> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "users", parsed.users);
     value = std::move(parsed);
 }
@@ -417,7 +432,8 @@ void decode_object(const Json& json, VideoChatScheduled& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    VideoChatScheduled parsed{};
+    detail::DecodeStorage<VideoChatScheduled> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "start_date", parsed.start_date);
     value = std::move(parsed);
 }
@@ -433,7 +449,8 @@ void decode_object(const Json& json, VideoChatStarted& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    VideoChatStarted parsed{};
+    detail::DecodeStorage<VideoChatStarted> storage;
+    auto& parsed = storage.value();
     value = std::move(parsed);
 }
 
@@ -452,7 +469,8 @@ void decode_object(const Json& json, VideoNote& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    VideoNote parsed{};
+    detail::DecodeStorage<VideoNote> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "file_id", parsed.file_id);
     detail::read_required(json, "file_unique_id", parsed.file_unique_id);
     detail::read_required(json, "length", parsed.length);
@@ -477,7 +495,8 @@ void decode_object(const Json& json, VideoQuality& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    VideoQuality parsed{};
+    detail::DecodeStorage<VideoQuality> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "file_id", parsed.file_id);
     detail::read_required(json, "file_unique_id", parsed.file_unique_id);
     detail::read_required(json, "width", parsed.width);
@@ -501,7 +520,8 @@ void decode_object(const Json& json, Voice& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    Voice parsed{};
+    detail::DecodeStorage<Voice> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "file_id", parsed.file_id);
     detail::read_required(json, "file_unique_id", parsed.file_unique_id);
     detail::read_required(json, "duration", parsed.duration);
@@ -521,7 +541,8 @@ void decode_object(const Json& json, WebAppData& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    WebAppData parsed{};
+    detail::DecodeStorage<WebAppData> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "data", parsed.data);
     detail::read_required(json, "button_text", parsed.button_text);
     value = std::move(parsed);
@@ -537,7 +558,8 @@ void decode_object(const Json& json, WebAppInfo& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    WebAppInfo parsed{};
+    detail::DecodeStorage<WebAppInfo> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "url", parsed.url);
     value = std::move(parsed);
 }
@@ -561,7 +583,8 @@ void decode_object(const Json& json, WebhookInfo& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    WebhookInfo parsed{};
+    detail::DecodeStorage<WebhookInfo> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "url", parsed.url);
     detail::read_required(json, "has_custom_certificate", parsed.has_custom_certificate);
     detail::read_required(json, "pending_update_count", parsed.pending_update_count);
@@ -587,7 +610,8 @@ void decode_object(const Json& json, WriteAccessAllowed& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    WriteAccessAllowed parsed{};
+    detail::DecodeStorage<WriteAccessAllowed> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "from_request", parsed.from_request);
     detail::read_optional(json, "web_app_name", parsed.web_app_name);
     detail::read_optional(json, "from_attachment_menu", parsed.from_attachment_menu);

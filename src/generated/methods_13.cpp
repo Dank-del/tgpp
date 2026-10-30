@@ -14,7 +14,8 @@ void decode_object(const Json& json, SetMyDefaultAdministratorRightsRequest& val
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SetMyDefaultAdministratorRightsRequest parsed{};
+    detail::DecodeStorage<SetMyDefaultAdministratorRightsRequest> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "rights", parsed.rights);
     detail::read_optional(json, "for_channels", parsed.for_channels);
     value = std::move(parsed);
@@ -45,7 +46,8 @@ void decode_object(const Json& json, SetMyDescriptionRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SetMyDescriptionRequest parsed{};
+    detail::DecodeStorage<SetMyDescriptionRequest> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "description", parsed.description);
     detail::read_optional(json, "language_code", parsed.language_code);
     value = std::move(parsed);
@@ -75,7 +77,8 @@ void decode_object(const Json& json, SetMyNameRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SetMyNameRequest parsed{};
+    detail::DecodeStorage<SetMyNameRequest> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "name", parsed.name);
     detail::read_optional(json, "language_code", parsed.language_code);
     value = std::move(parsed);
@@ -103,7 +106,8 @@ void decode_object(const Json& json, SetMyProfilePhotoRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SetMyProfilePhotoRequest parsed{};
+    detail::DecodeStorage<SetMyProfilePhotoRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "photo", parsed.photo);
     value = std::move(parsed);
 }
@@ -132,7 +136,8 @@ void decode_object(const Json& json, SetMyShortDescriptionRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SetMyShortDescriptionRequest parsed{};
+    detail::DecodeStorage<SetMyShortDescriptionRequest> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "short_description", parsed.short_description);
     detail::read_optional(json, "language_code", parsed.language_code);
     value = std::move(parsed);
@@ -163,7 +168,8 @@ void decode_object(const Json& json, SetPassportDataErrorsRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SetPassportDataErrorsRequest parsed{};
+    detail::DecodeStorage<SetPassportDataErrorsRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "user_id", parsed.user_id);
     detail::read_required(json, "errors", parsed.errors);
     value = std::move(parsed);
@@ -194,7 +200,8 @@ void decode_object(const Json& json, SetStickerEmojiListRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SetStickerEmojiListRequest parsed{};
+    detail::DecodeStorage<SetStickerEmojiListRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "sticker", parsed.sticker);
     detail::read_required(json, "emoji_list", parsed.emoji_list);
     value = std::move(parsed);
@@ -225,7 +232,8 @@ void decode_object(const Json& json, SetStickerKeywordsRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SetStickerKeywordsRequest parsed{};
+    detail::DecodeStorage<SetStickerKeywordsRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "sticker", parsed.sticker);
     detail::read_optional(json, "keywords", parsed.keywords);
     value = std::move(parsed);
@@ -256,7 +264,8 @@ void decode_object(const Json& json, SetStickerMaskPositionRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SetStickerMaskPositionRequest parsed{};
+    detail::DecodeStorage<SetStickerMaskPositionRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "sticker", parsed.sticker);
     detail::read_optional(json, "mask_position", parsed.mask_position);
     value = std::move(parsed);
@@ -287,7 +296,8 @@ void decode_object(const Json& json, SetStickerPositionInSetRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SetStickerPositionInSetRequest parsed{};
+    detail::DecodeStorage<SetStickerPositionInSetRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "sticker", parsed.sticker);
     detail::read_required(json, "position", parsed.position);
     value = std::move(parsed);
@@ -320,7 +330,8 @@ void decode_object(const Json& json, SetStickerSetThumbnailRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SetStickerSetThumbnailRequest parsed{};
+    detail::DecodeStorage<SetStickerSetThumbnailRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "name", parsed.name);
     detail::read_required(json, "user_id", parsed.user_id);
     detail::read_optional(json, "thumbnail", parsed.thumbnail);
@@ -353,7 +364,8 @@ void decode_object(const Json& json, SetStickerSetTitleRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    SetStickerSetTitleRequest parsed{};
+    detail::DecodeStorage<SetStickerSetTitleRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "name", parsed.name);
     detail::read_required(json, "title", parsed.title);
     value = std::move(parsed);

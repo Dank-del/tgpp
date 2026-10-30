@@ -13,11 +13,16 @@ ctest --test-dir build --output-on-failure
 cmake --install build --prefix ./install
 ```
 
-Standalone Asio (no Boost), libcurl, and nlohmann/json provide the runtime, HTTP,
-and JSON implementations. The async curl transport requires an asynchronous DNS
+Standalone Asio 1.38.2 or newer (no Boost), libcurl, and nlohmann/json provide the
+runtime, HTTP, and JSON implementations. The async curl transport requires an asynchronous DNS
 resolver in libcurl. HTTP/2 is negotiated if the installed curl supports it; HTTP/1.1
 also works. Optional webhook support adds the small llhttp C parser. Optional
 SQLite support adds SQLite. Downloaded source archives are pinned by checksum.
+When a suitable installed standalone Asio is unavailable, CMake fetches pinned
+1.38.2. This release includes upstream ThreadSanitizer annotations for executor
+reference counts, avoiding reports caused by TSan's unsupported standalone acquire
+fences ([upstream implementation](https://github.com/chriskohlhoff/asio/blob/asio-1-38-2/include/asio/detail/atomic_count.hpp)).
+Sanitizer checks remain enabled for SDK code; no race suppression is applied.
 Disabling `TGPP_BUILD_ASYNC` builds only the synchronous SDK; curl can independently
 be disabled for applications providing a custom transport.
 
@@ -145,7 +150,7 @@ code must also cooperate and avoid blocking indefinitely.
 
 ## Webhook deployment
 
-`WebhookServer` accepts an asynchronous `Receiver(Update)` callback. Configure an
+`WebhookServer` accepts an asynchronous `Receiver(const Update&)` callback. Configure an
 explicit path and a nonempty secret token; the default listener is loopback HTTP
 on port 8080. A reverse proxy such as Caddy terminates HTTPS:
 

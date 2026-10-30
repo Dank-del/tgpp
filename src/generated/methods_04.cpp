@@ -17,7 +17,8 @@ void decode_object(const Json& json, EditMessageChecklistRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    EditMessageChecklistRequest parsed{};
+    detail::DecodeStorage<EditMessageChecklistRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "business_connection_id", parsed.business_connection_id);
     detail::read_required(json, "chat_id", parsed.chat_id);
     detail::read_required(json, "message_id", parsed.message_id);
@@ -60,7 +61,8 @@ void decode_object(const Json& json, EditMessageLiveLocationRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    EditMessageLiveLocationRequest parsed{};
+    detail::DecodeStorage<EditMessageLiveLocationRequest> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "business_connection_id", parsed.business_connection_id);
     detail::read_optional(json, "chat_id", parsed.chat_id);
     detail::read_optional(json, "message_id", parsed.message_id);
@@ -106,7 +108,8 @@ void decode_object(const Json& json, EditMessageMediaRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    EditMessageMediaRequest parsed{};
+    detail::DecodeStorage<EditMessageMediaRequest> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "business_connection_id", parsed.business_connection_id);
     detail::read_optional(json, "chat_id", parsed.chat_id);
     detail::read_optional(json, "message_id", parsed.message_id);
@@ -144,7 +147,8 @@ void decode_object(const Json& json, EditMessageReplyMarkupRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    EditMessageReplyMarkupRequest parsed{};
+    detail::DecodeStorage<EditMessageReplyMarkupRequest> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "business_connection_id", parsed.business_connection_id);
     detail::read_optional(json, "chat_id", parsed.chat_id);
     detail::read_optional(json, "message_id", parsed.message_id);
@@ -188,7 +192,8 @@ void decode_object(const Json& json, EditMessageTextRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    EditMessageTextRequest parsed{};
+    detail::DecodeStorage<EditMessageTextRequest> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "business_connection_id", parsed.business_connection_id);
     detail::read_optional(json, "chat_id", parsed.chat_id);
     detail::read_optional(json, "message_id", parsed.message_id);
@@ -232,7 +237,8 @@ void decode_object(const Json& json, EditStoryRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    EditStoryRequest parsed{};
+    detail::DecodeStorage<EditStoryRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "business_connection_id", parsed.business_connection_id);
     detail::read_required(json, "story_id", parsed.story_id);
     detail::read_required(json, "content", parsed.content);
@@ -268,7 +274,8 @@ void decode_object(const Json& json, EditUserStarSubscriptionRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    EditUserStarSubscriptionRequest parsed{};
+    detail::DecodeStorage<EditUserStarSubscriptionRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "user_id", parsed.user_id);
     detail::read_required(json, "telegram_payment_charge_id", parsed.telegram_payment_charge_id);
     detail::read_required(json, "is_canceled", parsed.is_canceled);
@@ -299,7 +306,8 @@ void decode_object(const Json& json, ExportChatInviteLinkRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ExportChatInviteLinkRequest parsed{};
+    detail::DecodeStorage<ExportChatInviteLinkRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_id", parsed.chat_id);
     value = std::move(parsed);
 }
@@ -338,7 +346,8 @@ void decode_object(const Json& json, ForwardMessageRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ForwardMessageRequest parsed{};
+    detail::DecodeStorage<ForwardMessageRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_id", parsed.chat_id);
     detail::read_optional(json, "message_thread_id", parsed.message_thread_id);
     detail::read_optional(json, "direct_messages_topic_id", parsed.direct_messages_topic_id);
@@ -381,7 +390,8 @@ void decode_object(const Json& json, ForwardMessagesRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    ForwardMessagesRequest parsed{};
+    detail::DecodeStorage<ForwardMessagesRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_id", parsed.chat_id);
     detail::read_optional(json, "message_thread_id", parsed.message_thread_id);
     detail::read_optional(json, "direct_messages_topic_id", parsed.direct_messages_topic_id);
@@ -416,7 +426,8 @@ void decode_object(const Json& json, GetAvailableGiftsRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    GetAvailableGiftsRequest parsed{};
+    detail::DecodeStorage<GetAvailableGiftsRequest> storage;
+    auto& parsed = storage.value();
     value = std::move(parsed);
 }
 
@@ -455,7 +466,8 @@ void decode_object(const Json& json, GetBusinessAccountGiftsRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    GetBusinessAccountGiftsRequest parsed{};
+    detail::DecodeStorage<GetBusinessAccountGiftsRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "business_connection_id", parsed.business_connection_id);
     detail::read_optional(json, "exclude_unsaved", parsed.exclude_unsaved);
     detail::read_optional(json, "exclude_saved", parsed.exclude_saved);

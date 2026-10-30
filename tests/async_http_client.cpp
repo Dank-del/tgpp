@@ -42,9 +42,11 @@ class Sink final : public AsyncDownloadSink {
 };
 
 Task<void> check_api(std::shared_ptr<AsyncCurlTransport> transport) {
+    std::cerr << "[async_http] generated API" << std::endl;
     AsyncBot bot(transport);
     auto user = co_await bot.get_me();
     require(user.id == 123 && user.is_bot, "generated async getMe failed");
+    std::cerr << "[async_http] streamed upload" << std::endl;
     Request upload;
     upload.method = "upload";
     InputFile streamed;
@@ -53,14 +55,17 @@ Task<void> check_api(std::shared_ptr<AsyncCurlTransport> transport) {
     upload.files.push_back({"document", std::move(streamed)});
     auto response = co_await transport->perform(std::move(upload));
     require(response.at("result").get<int>() > 512 * 1024, "streamed multipart truncated");
+    std::cerr << "[async_http] memory upload" << std::endl;
     Request memory;
     memory.method = "upload";
     memory.files.push_back({"document", InputFile::from_memory({1, 2, 3, 4}, "memory.bin")});
     require((co_await transport->perform(std::move(memory))).at("ok").get<bool>(),
             "memory upload failed");
+    std::cerr << "[async_http] streamed download" << std::endl;
     auto sink = std::make_shared<Sink>();
     co_await transport->download("documents/test.bin", sink);
     require(sink->count == 1024 * 1024, "download was truncated or duplicated");
+    std::cerr << "[async_http] file roundtrip" << std::endl;
     auto files = std::make_shared<BlockingPool>(2, 4);
     const auto path = std::filesystem::temp_directory_path() /
                       ("tgpp-file-" +
@@ -79,6 +84,7 @@ Task<void> check_api(std::shared_ptr<AsyncCurlTransport> transport) {
     file_sink.reset();
     std::filesystem::remove(path);
 
+    std::cerr << "[async_http] deadlines and errors" << std::endl;
     Request deadline;
     deadline.method = "slow";
     deadline.control = std::make_shared<RequestControl>();
@@ -215,12 +221,14 @@ int main(int argc, char** argv) {
             }
             require(rejected_envelope, "malformed envelope accepted");
         }
+        std::cerr << "[async_http] blocking pool ownership" << std::endl;
         asio::io_context io;
         BlockingPool pool(1, 1);
         auto ownership = asio::co_spawn(io, shared_pool_cleanup(), asio::use_future);
         io.run();
         ownership.get();
         io.restart();
+        std::cerr << "[async_http] blocking pool admission" << std::endl;
         auto blocking = asio::co_spawn(io, offload_check(pool), asio::use_future);
         io.run();
         blocking.get();
@@ -248,6 +256,7 @@ int main(int argc, char** argv) {
         api.get();
         require(transport->stats().active == 0, "active request leaked");
         io.restart();
+        std::cerr << "[async_http] active cancellation" << std::endl;
         asio::cancellation_signal signal;
         auto active_cancel = asio::co_spawn(
             io, slow(transport), asio::bind_cancellation_slot(signal.slot(), asio::use_future));
@@ -263,6 +272,7 @@ int main(int argc, char** argv) {
         }
         require(coroutine_cancelled, "active coroutine cancellation ignored");
         io.restart();
+        std::cerr << "[async_http] queued cancellation" << std::endl;
         AsyncCurlOptions queued_options = options;
         queued_options.max_connections = 1;
         auto queued_transport = std::make_shared<AsyncCurlTransport>("123:token", queued_options);
@@ -286,6 +296,7 @@ int main(int argc, char** argv) {
         require(queue_cancelled, "queued coroutine cancellation ignored");
 
         io.restart();
+        std::cerr << "[async_http] HTTP admission" << std::endl;
         std::vector<std::future<void>> futures;
         for (int i = 0; i < 12; ++i) {
             futures.push_back(asio::co_spawn(io, slow(transport), asio::use_future));
@@ -302,6 +313,7 @@ int main(int argc, char** argv) {
         require(rejected_count > 0, "overload did not reject requests");
         require(transport->stats().queued == 0 && transport->stats().active == 0,
                 "queued operation leaked");
+        std::cerr << "[async_http] transport cleanup" << std::endl;
         std::cout << "async client/streaming/deadline/overload passed\n";
     } catch (const std::exception& error) {
         std::cerr << error.what() << '\n';

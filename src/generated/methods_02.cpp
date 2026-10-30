@@ -15,7 +15,8 @@ void decode_object(const Json& json, DeclineSuggestedPostRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    DeclineSuggestedPostRequest parsed{};
+    detail::DecodeStorage<DeclineSuggestedPostRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_id", parsed.chat_id);
     detail::read_required(json, "message_id", parsed.message_id);
     detail::read_optional(json, "comment", parsed.comment);
@@ -48,7 +49,8 @@ void decode_object(const Json& json, DeleteAllMessageReactionsRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    DeleteAllMessageReactionsRequest parsed{};
+    detail::DecodeStorage<DeleteAllMessageReactionsRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_id", parsed.chat_id);
     detail::read_optional(json, "user_id", parsed.user_id);
     detail::read_optional(json, "actor_chat_id", parsed.actor_chat_id);
@@ -80,7 +82,8 @@ void decode_object(const Json& json, DeleteBusinessMessagesRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    DeleteBusinessMessagesRequest parsed{};
+    detail::DecodeStorage<DeleteBusinessMessagesRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "business_connection_id", parsed.business_connection_id);
     detail::read_required(json, "message_ids", parsed.message_ids);
     value = std::move(parsed);
@@ -110,7 +113,8 @@ void decode_object(const Json& json, DeleteChatPhotoRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    DeleteChatPhotoRequest parsed{};
+    detail::DecodeStorage<DeleteChatPhotoRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_id", parsed.chat_id);
     value = std::move(parsed);
 }
@@ -138,7 +142,8 @@ void decode_object(const Json& json, DeleteChatStickerSetRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    DeleteChatStickerSetRequest parsed{};
+    detail::DecodeStorage<DeleteChatStickerSetRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_id", parsed.chat_id);
     value = std::move(parsed);
 }
@@ -169,7 +174,8 @@ void decode_object(const Json& json, DeleteEphemeralMessageRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    DeleteEphemeralMessageRequest parsed{};
+    detail::DecodeStorage<DeleteEphemeralMessageRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_id", parsed.chat_id);
     detail::read_required(json, "receiver_user_id", parsed.receiver_user_id);
     detail::read_required(json, "ephemeral_message_id", parsed.ephemeral_message_id);
@@ -201,7 +207,8 @@ void decode_object(const Json& json, DeleteForumTopicRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    DeleteForumTopicRequest parsed{};
+    detail::DecodeStorage<DeleteForumTopicRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_id", parsed.chat_id);
     detail::read_required(json, "message_thread_id", parsed.message_thread_id);
     value = std::move(parsed);
@@ -231,7 +238,8 @@ void decode_object(const Json& json, DeleteMessageRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    DeleteMessageRequest parsed{};
+    detail::DecodeStorage<DeleteMessageRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_id", parsed.chat_id);
     detail::read_required(json, "message_id", parsed.message_id);
     value = std::move(parsed);
@@ -263,7 +271,8 @@ void decode_object(const Json& json, DeleteMessageReactionRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    DeleteMessageReactionRequest parsed{};
+    detail::DecodeStorage<DeleteMessageReactionRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_id", parsed.chat_id);
     detail::read_required(json, "message_id", parsed.message_id);
     detail::read_optional(json, "user_id", parsed.user_id);
@@ -296,7 +305,8 @@ void decode_object(const Json& json, DeleteMessagesRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    DeleteMessagesRequest parsed{};
+    detail::DecodeStorage<DeleteMessagesRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "chat_id", parsed.chat_id);
     detail::read_required(json, "message_ids", parsed.message_ids);
     value = std::move(parsed);
@@ -326,7 +336,8 @@ void decode_object(const Json& json, DeleteMyCommandsRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    DeleteMyCommandsRequest parsed{};
+    detail::DecodeStorage<DeleteMyCommandsRequest> storage;
+    auto& parsed = storage.value();
     detail::read_optional(json, "scope", parsed.scope);
     detail::read_optional(json, "language_code", parsed.language_code);
     value = std::move(parsed);
@@ -355,7 +366,8 @@ void decode_object(const Json& json, DeleteStickerFromSetRequest& value) {
     if (!json.is_object()) {
         throw std::invalid_argument("expected Object");
     }
-    DeleteStickerFromSetRequest parsed{};
+    detail::DecodeStorage<DeleteStickerFromSetRequest> storage;
+    auto& parsed = storage.value();
     detail::read_required(json, "sticker", parsed.sticker);
     value = std::move(parsed);
 }
