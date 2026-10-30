@@ -6,6 +6,9 @@ import subprocess
 import sys
 import threading
 import time
+from unittest.mock import patch
+
+from local_http_server import LocalHTTPServer
 
 
 class Handler(http.server.BaseHTTPRequestHandler):
@@ -53,7 +56,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    with patch("socket.getfqdn", side_effect=AssertionError("loopback fixture attempted DNS")):
+        server = LocalHTTPServer(("127.0.0.1", 0), Handler)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     try:

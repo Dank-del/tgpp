@@ -147,6 +147,8 @@ def main():
                 "/nologo",
                 "/std:c++20",
                 "/utf-8",
+                "/DNOMINMAX",
+                "/DWIN32_LEAN_AND_MEAN",
                 "/EHsc",
                 "/permissive-",
                 "/Zc:__cplusplus",

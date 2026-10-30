@@ -10,6 +10,9 @@ import sys
 import tempfile
 import threading
 import time
+from unittest.mock import patch
+
+from local_http_server import LocalHTTPServer
 
 PAYLOAD = b"binary\x00payload\xff\r\n"
 MESSAGE = {"message_id": 1, "date": 1700000000, "chat": {"id": 42, "type": "private"}}
@@ -112,7 +115,8 @@ def main():
     with tempfile.TemporaryDirectory() as directory:
         upload = pathlib.Path(directory) / "upload.bin"
         upload.write_bytes(PAYLOAD)
-        server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        with patch("socket.getfqdn", side_effect=AssertionError("loopback fixture attempted DNS")):
+            server = LocalHTTPServer(("127.0.0.1", 0), Handler)
         thread = threading.Thread(target=server.serve_forever, daemon=True)
         thread.start()
         try:
