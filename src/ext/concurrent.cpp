@@ -117,16 +117,24 @@ void ConcurrentApplication::shutdown() {
     }
 }
 
-std::future<Result> ConcurrentApplication::submit(Update update) {
-    auto& worker = *workers_[lane(update)];
+std::future<Result> ConcurrentApplication::submit(const Update& update) {
+    return submit_owned(std::make_unique<Job>(update));
+}
+
+std::future<Result> ConcurrentApplication::submit(Update&& update) {
+    return submit_owned(std::make_unique<Job>(std::move(update)));
+}
+
+std::future<Result> ConcurrentApplication::submit_owned(std::unique_ptr<Job> job) {
+    auto& worker = *workers_[lane(job->update)];
     std::unique_lock<std::mutex> lock(mutex_);
     worker.space.wait(
         lock, [&] { return closing_ || worker.queue.size() < options_.queue_capacity_per_worker; });
     if (closing_) {
         throw std::logic_error("concurrent application is stopping");
     }
-    worker.queue.push_back({std::move(update), {}});
-    auto result = worker.queue.back().promise.get_future();
+    auto result = job->promise.get_future();
+    worker.queue.push_back(std::move(job));
     lock.unlock();
     worker.ready.notify_one();
     return result;
@@ -138,8 +146,9 @@ std::optional<std::future<Result>> ConcurrentApplication::try_submit(Update& upd
     if (closing_ || worker.queue.size() >= options_.queue_capacity_per_worker) {
         return {};
     }
-    worker.queue.push_back({std::move(update), {}});
-    auto result = worker.queue.back().promise.get_future();
+    auto job = std::make_unique<Job>(std::move(update));
+    auto result = job->promise.get_future();
+    worker.queue.push_back(std::move(job));
     lock.unlock();
     worker.ready.notify_one();
     return result;
@@ -147,14 +156,14 @@ std::optional<std::future<Result>> ConcurrentApplication::try_submit(Update& upd
 
 void ConcurrentApplication::work(Worker& worker) noexcept {
     while (true) {
-        std::optional<Job> job;
+        std::unique_ptr<Job> job;
         {
             std::unique_lock<std::mutex> lock(mutex_);
             worker.ready.wait(lock, [&] { return closing_ || !worker.queue.empty(); });
             if (worker.queue.empty()) {
                 break;
             }
-            job.emplace(std::move(worker.queue.front()));
+            job = std::move(worker.queue.front());
             worker.queue.pop_front();
         }
         worker.space.notify_one();

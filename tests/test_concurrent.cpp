@@ -21,15 +21,15 @@ struct Dummy : Transport {
     }
 };
 
-Update update(std::int64_t id, std::int64_t chat) {
-    Update value{};
-    value.update_id = id;
+std::unique_ptr<Update> update(std::int64_t id, std::int64_t chat) {
+    auto value = std::make_unique<Update>();
+    value->update_id = id;
     Message message{};
     message.message_id = id;
     message.chat.id = chat;
     message.chat.type = "private";
     message.text = "payload";
-    value.message = std::move(message);
+    value->message = std::move(message);
     return value;
 }
 
@@ -80,8 +80,8 @@ void parallel_chats_and_ordering() {
     auto transport = std::make_shared<Dummy>();
     Gate gate;
     ConcurrentApplication pool(factory(transport, [&](Context&) { gate.enter(); }), {2, 8, {}});
-    auto first = pool.submit(update(1, 1));
-    auto second = pool.submit(update(2, 2));
+    auto first = pool.submit(std::move(*update(1, 1)));
+    auto second = pool.submit(std::move(*update(2, 2)));
     const bool overlapped = gate.wait(2);
     gate.release();
     require(first.get() == Result::handled && second.get() == Result::handled,
@@ -95,7 +95,14 @@ void parallel_chats_and_ordering() {
         {3, 8, {}});
     std::vector<std::future<Result>> futures;
     for (int i = 1; i <= 100; ++i) {
-        futures.push_back(ordered.submit(update(i, 7)));
+        auto value = update(i, 7);
+        if (i % 2) {
+            futures.push_back(ordered.submit(*value));
+            require(value->message->text == "payload", "copy submission consumed its input");
+            value->update_id = -i;
+        } else {
+            futures.push_back(ordered.submit(std::move(*value)));
+        }
     }
     for (auto& future : futures) {
         future.get();
@@ -111,20 +118,20 @@ void backpressure_and_draining() {
     Gate gate;
     ConcurrentApplication pool(factory(transport, [&](Context&) { gate.enter(); }), {1, 1, {}});
     ReleaseGate release{gate};
-    auto active = pool.submit(update(1, 1));
+    auto active = pool.submit(std::move(*update(1, 1)));
     const bool entered = gate.wait(1);
     if (!entered) {
         gate.release();
         pool.shutdown();
         throw std::runtime_error("worker did not enter handler");
     }
-    auto queued = pool.submit(update(2, 1));
+    auto queued = pool.submit(std::move(*update(2, 1)));
     auto rejected = update(3, 1);
-    require(!pool.try_submit(rejected) && rejected.message->text == "payload",
+    require(!pool.try_submit(*rejected) && rejected->message->text == "payload",
             "full queue must reject without consuming input");
     auto blocked = std::async(std::launch::async, [&] {
         try {
-            pool.submit(update(4, 1));
+            pool.submit(std::move(*update(4, 1)));
             return false;
         } catch (const std::logic_error&) {
             return true;
@@ -136,7 +143,7 @@ void backpressure_and_draining() {
     require(active.get() == Result::handled && queued.get() == Result::handled,
             "accepted jobs must drain on shutdown");
     pool.shutdown();
-    require(!pool.try_submit(rejected), "stopped pools cannot accept updates");
+    require(!pool.try_submit(*rejected), "stopped pools cannot accept updates");
 }
 
 void errors_and_polling_checkpoint() {
@@ -151,11 +158,11 @@ void errors_and_polling_checkpoint() {
                                        }),
                                {2, 8, {}});
     transport->response = [] {
-        return Json{
-            {"ok", true},
-            {"result",
-             Json::array(
-                 {to_json(update(10, 1)), to_json(update(11, 2)), to_json(update(12, 3))})}};
+        Json batch = Json::array();
+        for (int id = 10; id <= 12; ++id) {
+            batch.push_back(to_json(*update(id, id - 9)));
+        }
+        return Json{{"ok", true}, {"result", std::move(batch)}};
     };
     Bot bot(transport);
     Polling polling(pool, bot);
@@ -168,7 +175,7 @@ void errors_and_polling_checkpoint() {
     require(failed && polling.offset() == 11,
             "concurrent polling must not acknowledge past the failed prefix");
     require(completed == 2, "accepted futures must all finish before returning a polling error");
-    require(pool.submit(update(13, 2)).get() == Result::handled,
+    require(pool.submit(std::move(*update(13, 2))).get() == Result::handled,
             "handler exceptions must not kill a worker");
     pool.shutdown();
 }
@@ -191,17 +198,18 @@ void startup_cleanup_and_keys() {
     }
     require(rejected, "factory failure must propagate without leaked worker threads");
     auto message = update(1, -1001234567890LL);
-    require(chat_ordering_key(message) == static_cast<std::uint64_t>(-1001234567890LL),
+    require(chat_ordering_key(*message) == static_cast<std::uint64_t>(-1001234567890LL),
             "64-bit chat key");
     CallbackQuery query{};
     MaybeInaccessibleMessage parent{};
-    parent.value = Box<Message>(*message.message);
+    parent.value = Box<Message>(*message->message);
     query.message = parent;
-    Update callback{};
-    callback.callback_query = query;
-    require(chat_ordering_key(callback) == chat_ordering_key(message),
+    auto callback = std::make_unique<Update>();
+    callback->callback_query = query;
+    require(chat_ordering_key(*callback) == chat_ordering_key(*message),
             "callbacks and messages in one chat must share a lane");
-    require(chat_ordering_key(Update{}) == 0, "chatless events must share a stable fallback lane");
+    require(chat_ordering_key(*std::make_unique<Update>()) == 0,
+            "chatless events must share a stable fallback lane");
 }
 } // namespace
 

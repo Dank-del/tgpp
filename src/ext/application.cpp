@@ -118,6 +118,8 @@ Result Application::process(const Update& update) {
 }
 
 Result Application::process_json(const Json& update) {
-    return process(from_json<Update>(update));
+    auto decoded = std::make_unique<Update>();
+    Codec<Update>::decode(update, *decoded);
+    return process(*decoded);
 }
 } // namespace tgpp::ext

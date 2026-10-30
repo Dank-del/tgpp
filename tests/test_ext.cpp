@@ -40,7 +40,9 @@ struct MockTransport : Transport {
     }
 };
 
-Update text_update(std::string text, std::int64_t id = 1) {
+// Update contains several optional full Message objects. Keep independent
+// fixtures on the heap so the tests also run on 512 KiB native thread stacks.
+std::shared_ptr<Update> text_update(std::string text, std::int64_t id = 1) {
     Message message{};
     message.message_id = 10;
     message.date = 1;
@@ -58,9 +60,9 @@ Update text_update(std::string text, std::int64_t id = 1) {
         entity.length = std::int64_t(end == std::string::npos ? message.text->size() : end);
         message.entities = std::vector<MessageEntity>{entity};
     }
-    Update update{};
-    update.update_id = id;
-    update.message = std::move(message);
+    auto update = std::make_shared<Update>();
+    update->update_id = id;
+    update->message = std::move(message);
     return update;
 }
 
@@ -156,7 +158,7 @@ void context_and_commands() {
     auto mock = std::make_shared<MockTransport>();
     Bot bot(mock);
     auto update = text_update("/AdD@Example_Bot   buy milk 🥛  ");
-    Context context(bot, update, "example_bot");
+    Context context(bot, *update, "example_bot");
     require(context.command() && context.command()->name == "add", "command normalization");
     require(context.command()->argument_text == "buy milk 🥛",
             "Unicode arguments must remain intact");
@@ -166,25 +168,25 @@ void context_and_commands() {
     require(filters::either(filters::command("missing"), filters::command("add"))(context),
             "either filter");
     require(!filters::negate(filters::text())(context), "negative filter");
-    Context other(bot, update, "other_bot");
+    Context other(bot, *update, "other_bot");
     require(!other.command(), "do not run commands addressed to a different bot");
-    Context unknown(bot, update);
+    Context unknown(bot, *update);
     require(!unknown.command(), "addressed commands need an identity");
-    update.message->entities.reset();
-    Context unmarked(bot, update, "example_bot");
+    update->message->entities.reset();
+    Context unmarked(bot, *update, "example_bot");
     require(!unmarked.command(), "literal slash text without an entity is not a command");
     auto empty = text_update("");
-    Context no_text(bot, empty);
+    Context no_text(bot, *empty);
     require(!no_text.command(), "empty message cannot be a command");
     auto wrong_boundary = text_update("/startmore");
-    wrong_boundary.message->entities->at(0).length = 6;
-    Context truncated(bot, wrong_boundary);
+    wrong_boundary->message->entities->at(0).length = 6;
+    Context truncated(bot, *wrong_boundary);
     require(!truncated.command(), "command entity must end at a token boundary");
 
     update = text_update("/start hello");
-    update.message->message_thread_id = 123;
-    update.message->business_connection_id = "business";
-    Context reply(bot, update);
+    update->message->message_thread_id = 123;
+    update->message->business_connection_id = "business";
+    Context reply(bot, *update);
     reply.reply("welcome");
     const auto& parameters = mock->requests.back().parameters;
     require(parameters.at("chat_id") == 42 && parameters.at("text") == "welcome", "reply helper");
@@ -193,16 +195,16 @@ void context_and_commands() {
             "reply scope");
     require(parameters.at("reply_parameters").at("message_id") == 10, "reply reference");
 
-    auto callback_update = Update{};
+    auto callback_update = std::make_shared<Update>();
     CallbackQuery callback{};
     callback.id = "query";
     callback.from.id = 8;
     callback.data = "tasks:complete:1";
     MaybeInaccessibleMessage accessible{};
-    accessible.value = Box<Message>(*update.message);
+    accessible.value = Box<Message>(*update->message);
     callback.message = accessible;
-    callback_update.callback_query = callback;
-    Context clicked(bot, callback_update);
+    callback_update->callback_query = callback;
+    Context clicked(bot, *callback_update);
     require(!clicked.command() && !clicked.message(),
             "callback messages do not trigger message commands");
     require(clicked.user()->id == 8 && clicked.chat()->id == 42, "callback actor and chat");
@@ -235,14 +237,14 @@ void routing_and_middleware() {
                 "feature metadata must not be present on a different update");
         ++fallback;
     });
-    require(app.process(text_update("/add")) == Result::handled, "nested routing");
+    require(app.process(*text_update("/add")) == Result::handled, "nested routing");
     require(events ==
                 std::vector<std::string>{
                     "global:before", "feature:before", "handler", "feature:after", "global:after"},
             "middleware nesting order");
     auto group = text_update("hello");
-    group.message->chat.type = "supergroup";
-    require(app.process(group) == Result::handled && fallback == 1, "feature filter fallthrough");
+    group->message->chat.type = "supergroup";
+    require(app.process(*group) == Result::handled && fallback == 1, "feature filter fallthrough");
     rejects([&] { root.child("late"); });
     rejects([&] { tasks.use<Block>(); });
 
@@ -250,27 +252,27 @@ void routing_and_middleware() {
     int called = 0;
     blocked.router().use<Block>();
     blocked.router().add<CountingCommand>("start", called);
-    require(blocked.process(text_update("/start")) == Result::stopped && called == 0,
+    require(blocked.process(*text_update("/start")) == Result::stopped && called == 0,
             "middleware short circuit");
 
     Application saved(mock);
     std::optional<Next> continuation;
     saved.router().use<SaveNext>(continuation);
     saved.router().add<CountingCommand>("start", called);
-    saved.process(text_update("/start"));
+    saved.process(*text_update("/start"));
     rejects([&] { (*continuation)(); });
     Application doubled(mock);
     doubled.router().use<DoubleNext>();
     doubled.router().add<CountingCommand>("start", called);
     const int before = called;
-    rejects([&] { doubled.process(text_update("/start")); });
+    rejects([&] { doubled.process(*text_update("/start")); });
     require(called == before + 1, "next must never dispatch twice");
 
     Application ordered(mock);
     int first = 0, second = 0;
     ordered.router().add<CountingCommand>("start", first);
     ordered.router().add<CountingCommand>("start", second);
-    ordered.process(text_update("/start"));
+    ordered.process(*text_update("/start"));
     require(first == 1 && second == 0, "first matching handler must win");
 }
 
@@ -317,12 +319,12 @@ void lifecycle_and_errors() {
         }
         return ErrorAction::skip;
     });
-    require(app.process(text_update("hello")) == Result::failed, "explicit skip result");
+    require(app.process(*text_update("hello")) == Result::failed, "explicit skip result");
     Application recursive(mock);
     recursive.router().add<FunctionHandler>("recursive", filters::all(), [&](Context& context) {
         recursive.process(context.update());
     });
-    rejects([&] { recursive.process(text_update("hello")); });
+    rejects([&] { recursive.process(*text_update("hello")); });
 
     events.clear();
     Application stopped(mock);
@@ -331,7 +333,7 @@ void lifecycle_and_errors() {
         stopped.stop();
         require(stopped.is_running(), "shutdown must wait for the current handler");
     });
-    stopped.process(text_update("hello"));
+    stopped.process(*text_update("hello"));
     require(!stopped.is_running() && events.back() == "feature:stop",
             "deferred shutdown must complete after dispatch");
 }
@@ -340,7 +342,7 @@ void polling_checkpoints() {
     auto mock = std::make_shared<MockTransport>();
     auto first = text_update("/ok", 10), second = text_update("/bad", 11);
     mock->respond = [first, second](const Request&) -> Json {
-        return {{"ok", true}, {"result", Json::array({to_json(first), to_json(second)})}};
+        return {{"ok", true}, {"result", Json::array({to_json(*first), to_json(*second)})}};
     };
     Application app(mock);
     int handled = 0;

@@ -98,6 +98,7 @@ struct AsyncCurlTransport::Impl : std::enable_shared_from_this<AsyncCurlTranspor
     std::shared_ptr<BlockingPool> files = std::make_shared<BlockingPool>(2, 64);
     std::string token;
     AsyncCurlOptions options;
+    long http_version = CURL_HTTP_VERSION_1_1;
     CURLM* multi = nullptr;
     std::mutex mutex;
     std::deque<std::shared_ptr<Operation>> pending;
@@ -112,6 +113,9 @@ struct AsyncCurlTransport::Impl : std::enable_shared_from_this<AsyncCurlTranspor
         // libcurl's init is reference counted, paired once per reactor.
         check(curl_global_init(CURL_GLOBAL_DEFAULT));
         const auto* version = curl_version_info(CURLVERSION_NOW);
+        if (version->features & CURL_VERSION_HTTP2) {
+            http_version = CURL_HTTP_VERSION_2TLS;
+        }
         if (!(version->features & CURL_VERSION_ASYNCHDNS)) {
             curl_global_cleanup();
             throw std::runtime_error("async transport requires libcurl asynchronous DNS support");
@@ -303,7 +307,9 @@ struct AsyncCurlTransport::Impl : std::enable_shared_from_this<AsyncCurlTranspor
         check(curl_easy_setopt(op->easy, CURLOPT_TIMEOUT, options.timeout_seconds));
         check(curl_easy_setopt(op->easy, CURLOPT_WRITEFUNCTION, write_callback));
         check(curl_easy_setopt(op->easy, CURLOPT_WRITEDATA, op.get()));
-        check(curl_easy_setopt(op->easy, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2TLS));
+        // Request HTTP/2 only when this libcurl actually implements it. A
+        // build without HTTP/2 rejects 2TLS even for a plain HTTP request.
+        check(curl_easy_setopt(op->easy, CURLOPT_HTTP_VERSION, http_version));
         if (op->sink) {
             return;
         }
