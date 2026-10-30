@@ -66,7 +66,7 @@ def format_cpp(source, name, executable):
                 f"--assume-filename={ROOT / name}",
             ],
             input=source,
-            text=True,
+            encoding="utf-8",
             capture_output=True,
             check=True,
         ).stdout
@@ -598,7 +598,7 @@ def update_spec():
         license_text = response.read()
     (ROOT / "spec/api.json").write_bytes(data)
     (ROOT / "spec/LICENSE").write_bytes(license_text)
-    (ROOT / "spec/lock.json").write_text(json.dumps(lock, indent=2) + "\n")
+    (ROOT / "spec/lock.json").write_bytes((json.dumps(lock, indent=2) + "\n").encode("utf-8"))
 
 
 def main():
@@ -610,7 +610,7 @@ def main():
     if args.update_spec:
         update_spec()
     data = (ROOT / "spec/api.json").read_bytes()
-    lock = json.loads((ROOT / "spec/lock.json").read_text())
+    lock = json.loads((ROOT / "spec/lock.json").read_text(encoding="utf-8"))
     digest = hashlib.sha256(data).hexdigest()
     if digest != lock["sha256"]:
         raise SystemExit("spec hash mismatch; restore the pinned spec or use --update-spec")
@@ -620,7 +620,7 @@ def main():
     changed = [
         name
         for name, text in outputs.items()
-        if not (ROOT / name).exists() or (ROOT / name).read_text() != text
+        if not (ROOT / name).exists() or (ROOT / name).read_text(encoding="utf-8") != text
     ]
     if args.check:
         if changed or stale:
@@ -635,7 +635,7 @@ def main():
             text = outputs[name]
             path = ROOT / name
             path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(text)
+            path.write_bytes(text.encode("utf-8"))
     action = "Verified" if args.check else "Generated"
     print(
         f"{action} {len(spec['types'])} types (including InputFile), "

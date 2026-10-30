@@ -48,6 +48,9 @@ target_include_directories(
                 "$<INSTALL_INTERFACE:include>"
 )
 target_link_libraries(tgpp PUBLIC nlohmann_json::nlohmann_json)
+if(MSVC)
+    target_compile_options(tgpp PUBLIC /utf-8)
+endif()
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(tgpp PRIVATE -Wall -Wextra -Wpedantic)
 endif()

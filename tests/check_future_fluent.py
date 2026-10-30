@@ -53,7 +53,7 @@ tgpp::Task<void> future_api_source_compatibility(tgpp::AsyncBot bot) {
 
 
 def future_spec():
-    spec = copy.deepcopy(json.loads((ROOT / "spec/api.json").read_text()))
+    spec = copy.deepcopy(json.loads((ROOT / "spec/api.json").read_text(encoding="utf-8")))
     if "futureAction" in spec["methods"] or any(
         field["name"] == "future_flag" for field in spec["methods"]["sendMessage"]["fields"]
     ):
@@ -131,17 +131,22 @@ def main():
         for name, source in outputs.items():
             target = work / name
             target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_text(source)
+            target.write_bytes(source.encode("utf-8"))
         fixture = work / "future_fluent_contract.cpp"
         # The existing user-style fixture is deliberately kept unchanged: it must
         # compile in the very same translation unit as the new API usage.
-        fixture.write_text((ROOT / "tests/fluent_contract.cpp").read_text() + FUTURE_CONTRACT)
+        fixture.write_bytes(
+            (
+                (ROOT / "tests/fluent_contract.cpp").read_text(encoding="utf-8") + FUTURE_CONTRACT
+            ).encode("utf-8")
+        )
         includes = [work / "include", *(Path(value) for value in args.include if value)]
         if args.compiler_style == "msvc":
             command = [
                 args.compiler,
                 "/nologo",
                 "/std:c++20",
+                "/utf-8",
                 "/EHsc",
                 "/permissive-",
                 "/Zc:__cplusplus",

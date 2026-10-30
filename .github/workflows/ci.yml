@@ -1,5 +1,11 @@
 name: CI
-on: [push, pull_request]
+on:
+  push:
+    branches: ['**']
+  pull_request:
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   format:
     runs-on: ubuntu-latest
@@ -43,6 +49,8 @@ jobs:
           brew install curl sqlite ninja
           echo "CMAKE_PREFIX_PATH=$(brew --prefix curl):$(brew --prefix sqlite)" >> "$GITHUB_ENV"
       - if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
+      - if: runner.os == 'Windows'
         shell: pwsh
         run: |
           vcpkg install curl:x64-windows sqlite3:x64-windows
@@ -54,14 +62,22 @@ jobs:
         env:
           CXX: ${{ matrix.compiler }}
         run: |
-          cmake -S . -B build -DCMAKE_CXX_STANDARD=20 \
+          cmake -S . -B build -DCMAKE_CXX_STANDARD=20 -DCMAKE_BUILD_TYPE=Release \
             -DTGPP_BUILD_EXAMPLES=ON -DTGPP_BUILD_BENCHMARKS=ON \
             -DTGPP_WITH_WEBHOOK=ON -DTGPP_WITH_SQLITE=ON
       - run: cmake --build build --config Release --parallel 2
       - run: ctest --test-dir build -C Release --output-on-failure
+      - name: Diagnose macOS async framework failure
+        if: failure() && runner.os == 'macOS'
+        continue-on-error: true
+        run: lldb --batch -o run -o 'thread backtrace all' -- build/tgpp_async_framework_tests
+      - name: Diagnose macOS webhook failure
+        if: failure() && runner.os == 'macOS'
+        continue-on-error: true
+        run: lldb --batch -o run -o 'thread backtrace all' -- build/tgpp_webhook_tests
       - run: cmake --install build --config Release --prefix install
       - name: Installed consumer
-        run: cmake -S tests/install_consumer -B installed-consumer -DCMAKE_PREFIX_PATH=${{ github.workspace }}/install
+        run: cmake -S tests/install_consumer -B installed-consumer -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=${{ github.workspace }}/install
       - run: cmake --build installed-consumer --config Release --parallel 2
       - run: ctest --test-dir installed-consumer -C Release --output-on-failure
   sanitizers:

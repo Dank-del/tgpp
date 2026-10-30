@@ -1,0 +1,4 @@
+* text=auto eol=lf
+
+# Preserve the exact upstream bytes covered by spec/lock.json.
+spec/api.json -text

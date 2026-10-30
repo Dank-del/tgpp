@@ -18,7 +18,7 @@ def main():
     sources = sorted((ROOT / "examples/showcase_bot/demos").glob("*.cpp"))
     sources.append(ROOT / "examples/showcase_bot/showcase/catalog.cpp")
     for source in sources:
-        text = source.read_text()
+        text = source.read_text(encoding="utf-8")
         text = text.replace('"showcase/catalog.hpp"', '"async_showcase/catalog.hpp"')
         text = text.replace('"catalog.hpp"', '"async_showcase/catalog.hpp"')
         text = text.replace("namespace showcase", "namespace async_showcase")
@@ -38,10 +38,10 @@ def main():
         target = ROOT / "examples/async_showcase/generated" / source.name
         text = format_cpp(text, str(target.relative_to(ROOT)), formatter)
         if args.check:
-            if not target.exists() or target.read_text() != text:
+            if not target.exists() or target.read_text(encoding="utf-8") != text:
                 raise SystemExit(f"stale async showcase: {target.relative_to(ROOT)}")
         else:
-            target.write_text(text)
+            target.write_bytes(text.encode("utf-8"))
     print("Verified async showcase" if args.check else "Generated async showcase")
 
 

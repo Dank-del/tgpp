@@ -60,10 +60,10 @@ def main():
     else:
         for name in cpp:
             path = ROOT / name
-            source = path.read_text()
+            source = path.read_text(encoding="utf-8")
             formatted = format_cpp(source, name, cpp_formatter)
             if formatted != source:
-                path.write_text(formatted)
+                path.write_bytes(formatted.encode("utf-8"))
 
     commands = [
         [
