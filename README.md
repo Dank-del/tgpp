@@ -261,6 +261,23 @@ changes and rebuild/test before publishing an update. The generator fails on
 unknown schema types instead of substituting untyped JSON. Generation is
 deterministic; there are no timestamps in generated output.
 
+The **Update Telegram API** GitHub Actions workflow checks upstream daily at
+04:23 UTC and can also be run manually from the Actions tab. When the pin changes,
+it regenerates the SDK, updates the version/counts above, checks formatting and
+reproducibility, and builds/tests with GCC and Clang before opening or updating
+one PR on `automation/update-telegram-api`. Updates follow the community schema
+linked above, so they may lag Telegram releases. Unsupported schema changes fail
+the workflow and require a generator change; updates are not automatically merged
+or released.
+
+After merging the workflow into the default branch, enable **Settings → Actions →
+General → Workflow permissions → Allow GitHub Actions to create and approve pull
+requests**. No additional secret is required. The workflow validates updates
+itself because PRs created with `GITHUB_TOKEN` do not trigger the usual push/PR CI
+([action documentation](https://github.com/peter-evans/create-pull-request#token)).
+If branch protection requires those separate CI checks, use a GitHub App or
+appropriately scoped PAT for the PR action, or arrange a separate CI run before merging.
+
 ## Code formatting
 
 The repository uses four-space indentation and a 100-column limit. C++ uses
