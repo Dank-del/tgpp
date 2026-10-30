@@ -175,6 +175,10 @@ Task<void> shared_pool_cleanup() {
         source.reset();
         require(bytes == std::vector<std::uint8_t>({1, 2, 3}), "owned file pool lost bytes");
     }
+    // This fixture runs one io_context thread. Yield so the previous blocking
+    // completion releases its callable/file state before Windows deletes the
+    // still-open input file (unlinking an open file happens to work on POSIX).
+    co_await asio::post(executor, asio::use_awaitable);
     std::filesystem::remove(path);
 }
 
