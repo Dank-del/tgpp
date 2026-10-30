@@ -34,7 +34,8 @@ int main(int argc, char** argv) {
                 "usage: tgpp_http_bench sync|baseline-default|async BASE_URL REQUESTS CONCURRENCY");
         }
         std::string mode = argv[1], base = argv[2];
-        auto count = std::stoul(argv[3]), concurrency = std::stoul(argv[4]);
+        const std::size_t count = std::stoul(argv[3]);
+        const std::size_t concurrency = std::stoul(argv[4]);
         if (!count || !concurrency ||
             (mode != "sync" && mode != "baseline-default" && mode != "async")) {
             throw std::invalid_argument("invalid benchmark arguments");

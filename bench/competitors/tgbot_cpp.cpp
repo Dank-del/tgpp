@@ -33,7 +33,8 @@ int main(int argc, char** argv) {
             throw std::invalid_argument("usage: tgpp_http_bench BASE_URL REQUESTS CONCURRENCY");
         }
         std::string base = argv[1];
-        auto count = std::stoul(argv[2]), concurrency = std::stoul(argv[3]);
+        const std::size_t count = std::stoul(argv[2]);
+        const std::size_t concurrency = std::stoul(argv[3]);
         if (!count || !concurrency) {
             throw std::invalid_argument("invalid benchmark arguments");
         }

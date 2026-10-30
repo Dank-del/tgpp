@@ -22,6 +22,7 @@ Task<void> invoke(std::shared_ptr<Function> function, AsyncContext& context) {
                       "BotApp handlers return void or an asio::awaitable result");
         std::invoke(*function, context);
     }
+    co_return;
 }
 
 template <class Function> AsyncCallback adapt(Function function) {
