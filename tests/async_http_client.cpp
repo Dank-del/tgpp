@@ -1,5 +1,6 @@
 #include <atomic>
 #include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <numeric>
 #include <tgpp/async_curl.hpp>
@@ -179,6 +180,17 @@ Task<void> shared_pool_cleanup() {
     // completion releases its callable/file state before Windows deletes the
     // still-open input file (unlinking an open file happens to work on POSIX).
     co_await asio::post(executor, asio::use_awaitable);
+    auto exhausted = std::make_shared<FileUploadSource>(pool, path.string());
+    require((co_await exhausted->read(64)).size() == 3, "file EOF fixture lost bytes");
+    require((co_await exhausted->read(64)).empty(), "file source did not reach EOF");
+    // EOF must close the handle even while the source remains alive. Windows
+    // enforces this; replacing the path must not restart an exhausted source.
+    std::filesystem::remove(path);
+    {
+        std::ofstream replacement(path, std::ios::binary);
+        replacement << "replacement";
+    }
+    require((co_await exhausted->read(64)).empty(), "exhausted source reopened replaced file");
     std::filesystem::remove(path);
 }
 

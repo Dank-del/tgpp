@@ -54,6 +54,7 @@ struct FileUploadSource::Impl {
     std::shared_ptr<BlockingPool> owner;
     BlockingPool& pool;
     std::ifstream file;
+    bool eof = false;
     std::string path;
     std::mutex mutex;
 
@@ -73,6 +74,9 @@ Task<std::vector<std::uint8_t>> FileUploadSource::read(std::size_t max_bytes) {
     auto state = impl_;
     co_return co_await state->pool.run([state, max_bytes] {
         std::lock_guard lock(state->mutex);
+        if (state->eof) {
+            return std::vector<std::uint8_t>{};
+        }
         if (!state->file.is_open()) {
             state->file.open(state->path, std::ios::binary);
         }
@@ -85,6 +89,12 @@ Task<std::vector<std::uint8_t>> FileUploadSource::read(std::size_t max_bytes) {
         bytes.resize(static_cast<std::size_t>(state->file.gcount()));
         if (state->file.bad()) {
             throw TransportError("could not read upload file");
+        }
+        if (state->file.eof()) {
+            // Release the OS handle before publishing EOF. Transport completion
+            // may resume its caller while retaining this source for bookkeeping.
+            state->eof = true;
+            state->file.close();
         }
         return bytes;
     });
