@@ -1,9 +1,15 @@
 #include <limits>
 #include <tgpp/ext/polling.hpp>
+#include <tgpp/ext/retry.hpp>
+#include <thread>
 
 namespace tgpp::ext {
 namespace {
 void validate(const PollingOptions& options) {
+    if (options.retry.initial_delay.count() <= 0 ||
+        options.retry.max_delay < options.retry.initial_delay) {
+        throw std::invalid_argument("polling retry delays must be positive and ordered");
+    }
     if (options.request.limit && (*options.request.limit < 1 || *options.request.limit > 100)) {
         throw std::invalid_argument("polling limit must be between 1 and 100");
     }
@@ -41,7 +47,36 @@ std::size_t Polling::poll(const std::function<bool()>& keep_running) {
     }
     auto request = options_.request;
     request.offset = offset_;
-    auto updates = bot_->get_updates(request);
+    std::vector<Update> updates;
+    unsigned attempt = 0;
+    while (should_continue()) {
+        std::exception_ptr error;
+        try {
+            updates = bot_->get_updates(request);
+            break;
+        } catch (...) {
+            error = std::current_exception();
+        }
+        auto delay = detail::polling_retry_delay(error, options_.retry, attempt);
+        if (!delay) {
+            std::rethrow_exception(error);
+        }
+        if (attempt < 32) {
+            ++attempt;
+        }
+        if (options_.retry.on_retry) {
+            options_.retry.on_retry(error, *delay);
+        }
+        auto remaining = *delay;
+        while (remaining.count() > 0 && should_continue()) {
+            auto slice = std::min(remaining, std::chrono::milliseconds(25));
+            std::this_thread::sleep_for(slice);
+            remaining -= slice;
+        }
+    }
+    if (!should_continue()) {
+        return 0;
+    }
     std::size_t count = 0;
     std::vector<std::pair<std::int64_t, std::future<Result>>> pending;
     if (concurrent_) {

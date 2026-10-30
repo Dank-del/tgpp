@@ -64,12 +64,13 @@ jobs:
         run: |
           python tools/format.py --check
           python tools/generate.py --check
+          python examples/async_showcase/generate.py --check
 
       - name: Install build dependencies
         if: steps.changes.outputs.changed == 'true'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libcurl4-openssl-dev ninja-build clang
+          sudo apt-get install -y libcurl4-openssl-dev libsqlite3-dev ninja-build clang
 
       # GITHUB_TOKEN-created PRs do not trigger the normal push/PR CI.
       # Validate the candidate here before creating or updating its PR.
@@ -80,9 +81,10 @@ jobs:
             build_dir="build-${compiler}"
             cmake -S . -B "$build_dir" -G Ninja \
               -DCMAKE_CXX_COMPILER="$compiler" \
-              -DCMAKE_CXX_STANDARD=17 \
+              -DCMAKE_CXX_STANDARD=20 \
               -DTGPP_BUILD_EXAMPLES=ON \
-              -DTGPP_BUILD_BENCHMARKS=ON
+              -DTGPP_BUILD_BENCHMARKS=ON \
+              -DTGPP_WITH_WEBHOOK=ON -DTGPP_WITH_SQLITE=ON
             cmake --build "$build_dir" --parallel 2
             ctest --test-dir "$build_dir" --output-on-failure
             "$build_dir/tgpp_dispatch_bench"
@@ -99,6 +101,8 @@ jobs:
             spec/
             include/tgpp/types.hpp
             include/tgpp/methods.hpp
+            include/tgpp/async_methods.hpp
+            include/tgpp/api_builders.hpp
             src/generated/
             README.md
           body: |
@@ -110,7 +114,7 @@ jobs:
 
             Validation before this PR was created/updated:
             - Formatting and reproducible generation
-            - C++17 builds, tests, and dispatch benchmark with GCC and Clang
+            - C++20 builds, tests, and dispatch benchmark with GCC and Clang
 
             Review compatibility before merging. This workflow does not publish releases.
             The default GITHUB_TOKEN does not trigger push/pull_request CI; validation

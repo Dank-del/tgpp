@@ -1,0 +1,6 @@
+if(TGPP_BUILD_ASYNC AND TGPP_BUILD_TESTS)
+    add_executable(tgpp_async_router_tests tests/test_async_router.cpp)
+    target_link_libraries(tgpp_async_router_tests PRIVATE tgpp::async_ext)
+    add_test(NAME async_router COMMAND tgpp_async_router_tests)
+    set_tests_properties(async_router PROPERTIES TIMEOUT 30)
+endif()

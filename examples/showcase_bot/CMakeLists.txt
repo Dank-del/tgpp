@@ -15,7 +15,7 @@ target_include_directories(showcase_features PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}
 target_link_libraries(showcase_features PUBLIC tgpp::ext Threads::Threads)
 set_target_properties(
     showcase_features
-    PROPERTIES CXX_STANDARD 17
+    PROPERTIES CXX_STANDARD 20
                CXX_STANDARD_REQUIRED ON
                CXX_EXTENSIONS OFF
 )

@@ -29,20 +29,24 @@ if(NOT nlohmann_json_FOUND)
         DOWNLOAD_EXTRACT_TIMESTAMP TRUE
     )
     set(JSON_BuildTests OFF)
+    set(JSON_Install ON)
     FetchContent_MakeAvailable(nlohmann_json)
 endif()
 
 file(GLOB GENERATED_SOURCES CONFIGURE_DEPENDS src/generated/*.cpp)
 add_library(tgpp src/core.cpp ${GENERATED_SOURCES})
 add_library(tgpp::tgpp ALIAS tgpp)
-target_compile_features(tgpp PUBLIC cxx_std_17)
+target_compile_features(tgpp PUBLIC cxx_std_20)
 set_target_properties(
     tgpp
-    PROPERTIES CXX_STANDARD 17
+    PROPERTIES CXX_STANDARD 20
                CXX_STANDARD_REQUIRED ON
                CXX_EXTENSIONS OFF
 )
-target_include_directories(tgpp PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
+target_include_directories(
+    tgpp PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+                "$<INSTALL_INTERFACE:include>"
+)
 target_link_libraries(tgpp PUBLIC nlohmann_json::nlohmann_json)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(tgpp PRIVATE -Wall -Wextra -Wpedantic)
@@ -57,7 +61,7 @@ add_library(tgpp::ext ALIAS tgpp_ext)
 target_link_libraries(tgpp_ext PUBLIC tgpp::tgpp Threads::Threads)
 set_target_properties(
     tgpp_ext
-    PROPERTIES CXX_STANDARD 17
+    PROPERTIES CXX_STANDARD 20
                CXX_STANDARD_REQUIRED ON
                CXX_EXTENSIONS OFF
 )
@@ -66,11 +70,13 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 endif()
 
 if(TGPP_WITH_CURL)
-    find_package(CURL 7.56 REQUIRED)
+    find_package(CURL 7.68 REQUIRED)
     target_sources(tgpp PRIVATE src/curl_transport.cpp)
     target_link_libraries(tgpp PUBLIC CURL::libcurl Threads::Threads)
     target_compile_definitions(tgpp PUBLIC TGPP_WITH_CURL=1)
 endif()
+
+include(cmake/Async.cmake)
 
 if(PROJECT_IS_TOP_LEVEL OR TGPP_BUILD_TESTS)
     find_package(Python3 COMPONENTS Interpreter)
@@ -159,4 +165,25 @@ endif()
 if(TGPP_BUILD_EXAMPLES OR TGPP_BUILD_TESTS)
     add_subdirectory(examples/modular_bot)
     add_subdirectory(examples/showcase_bot)
+endif()
+
+include(cmake/Install.cmake)
+include(cmake/WebhookTests.cmake)
+foreach(
+    test_file
+    CoreTests
+    FrameworkTests
+    StoreTests
+    FluentTests
+    BotAppTests
+    RouterTests
+    ApiBuilderTests
+    FutureApiTests
+)
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/cmake/${test_file}.cmake")
+        include("cmake/${test_file}.cmake")
+    endif()
+endforeach()
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/cmake/AsyncShowcase.cmake")
+    include(cmake/AsyncShowcase.cmake)
 endif()

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the C++17 Bot API surface from a pinned gotgbot-compatible spec.
+"""Generate the C++20 Bot API surface from a pinned gotgbot-compatible spec.
 
 The default invocation is entirely offline. --update-spec deliberately refreshes
 the upstream pin; --check verifies both its hash and all generated files.
@@ -25,6 +25,7 @@ KEYWORDS = set(
     else enum explicit export extern false float for friend goto if inline int long mutable
     namespace new noexcept not not_eq nullptr operator or or_eq private protected public register
     reinterpret_cast return short signed sizeof static static_assert static_cast struct switch
+    concept requires co_await co_return co_yield consteval constinit char8_t
     template this thread_local throw true try typedef typeid typename union unsigned using virtual
     void volatile wchar_t while xor xor_eq
     """.split()
@@ -323,6 +324,18 @@ class Generator:
         return "\n".join(lines)
 
     def generate(self):
+        method_names, builder_names = set(), set()
+        for name in self.spec["methods"]:
+            normalized = snake(name)
+            builder = name[0].upper() + name[1:] + "Builder"
+            if normalized in {"api", "to", "call", "bot_"}:
+                raise ValueError(
+                    f"upstream method {name} conflicts with a client/fluent entry point; update the generator's compatibility mapping"
+                )
+            if normalized in method_names or builder in builder_names:
+                raise ValueError(f"upstream method {name} has a generated C++ name collision")
+            method_names.add(normalized)
+            builder_names.add(builder)
         header = [self.banner(), '#pragma once\n#include "codec.hpp"\n', "namespace tgpp {"]
         for name in sorted(self.types):
             header.append(f"struct {name};")
@@ -427,6 +440,132 @@ class Generator:
             ]
         )
         outputs["include/tgpp/methods.hpp"] = "\n".join(methods)
+        async_methods = [
+            self.banner(),
+            '#pragma once\n#include "async.hpp"\n#include "methods.hpp"\n',
+            "namespace tgpp {",
+            "class ChatActions;",
+            "class ApiActions;",
+            "class AsyncBot : public AsyncClient {",
+            "public:",
+            "using AsyncClient::AsyncClient;",
+            "ChatActions to(std::int64_t chat_id) const;",
+            "ChatActions to(std::string chat_id) const;",
+            "ApiActions api() const;",
+        ]
+        for name, method in sorted(self.spec["methods"].items()):
+            options = name[0].upper() + name[1:] + "Request"
+            result = self.type(method["returns"])
+            default = " = {}" if not any(f["required"] for f in method.get("fields", [])) else ""
+            async_methods.extend(
+                [
+                    f"Task<{result}> {snake(name)}({options} options{default}, "
+                    "std::vector<Attachment> attachments = {}, "
+                    "std::shared_ptr<RequestControl> control = {}) const {",
+                    "auto request = make_request(options, std::move(attachments));",
+                    "request.control = std::move(control);",
+                    f"co_return from_json<{result}>(co_await call(std::move(request)));",
+                    "}",
+                ]
+            )
+        async_methods.extend(
+            [
+                "};",
+                "} // namespace tgpp\n",
+                '#include "fluent.hpp"\n',
+                '#include "api_builders.hpp"\n',
+            ]
+        )
+        outputs["include/tgpp/async_methods.hpp"] = "\n".join(async_methods)
+        builders = [
+            self.banner(),
+            '#pragma once\n#include "async_methods.hpp"\n#include "request_builder.hpp"\n',
+            "namespace tgpp::api {",
+        ]
+        facade = [
+            "namespace tgpp {",
+            "class ApiActions {",
+            "AsyncBot bot_;",
+            "friend class AsyncBot;",
+            "explicit ApiActions(AsyncBot bot) : bot_(std::move(bot)) {}",
+            "public:",
+        ]
+        reserved = {
+            "send",
+            "configure",
+            "request",
+            "control",
+            "attachments",
+            "self",
+            "mark_required",
+            "builder_bot_",
+            "builder_request_",
+            "builder_attachments_",
+            "builder_control_",
+            "builder_required_",
+            "builder_raw_",
+        }
+        for name, method in sorted(self.spec["methods"].items()):
+            options = name[0].upper() + name[1:] + "Request"
+            builder = name[0].upper() + name[1:] + "Builder"
+            result = self.type(method["returns"])
+            required = sum(field["required"] for field in method.get("fields", []))
+            base = f"ApiRequestBuilder<{options}, {result}, &AsyncBot::{snake(name)}, {required}, {builder}>"
+            builders.extend(
+                [
+                    f"class {builder} final : public {base} {{",
+                    f"using Base = {base};",
+                    "public:",
+                    f"explicit {builder}(AsyncBot bot) : Base(std::move(bot)) {{}}",
+                ]
+            )
+            used = set()
+            required_index = 0
+            for field in method.get("fields", []):
+                setter = identifier(snake(field["name"]))
+                if setter in reserved:
+                    setter = "set_" + setter
+                if setter in used:
+                    raise ValueError(
+                        f"upstream field {name}.{field['name']} has a generated builder setter collision: {setter}"
+                    )
+                used.add(setter)
+                kind = self.type(field["types"])
+                builders.extend(
+                    [
+                        comment(field["description"]),
+                        f"{builder}& {setter}({kind} value) {{",
+                        f"this->builder_request_.{identifier(field['name'])} = std::move(value);",
+                    ]
+                )
+                if field["required"]:
+                    builders.append(f"this->mark_required({required_index});")
+                    required_index += 1
+                builders.extend(["return *this;", "}"])
+                if not field["required"]:
+                    optional_parameter = "TgppOptionalValue"
+                    while optional_parameter in self.types:
+                        optional_parameter = "Tgpp" + optional_parameter
+                    builders.extend(
+                        [
+                            f"{builder}& {setter}(std::nullopt_t) {{ this->builder_request_.{identifier(field['name'])}.reset(); return *this; }}",
+                            f"template<class {optional_parameter}> requires std::same_as<std::remove_cvref_t<{optional_parameter}>, std::optional<{kind}>>",
+                            f"{builder}& {setter}({optional_parameter}&& value) {{ this->builder_request_.{identifier(field['name'])} = std::forward<{optional_parameter}>(value); return *this; }}",
+                        ]
+                    )
+            builders.append("};")
+            facade.append(
+                f"api::{builder} {snake(name)}() const {{ return api::{builder}(bot_); }}"
+            )
+        builders.append("} // namespace tgpp::api")
+        facade.extend(
+            [
+                "};",
+                "inline ApiActions AsyncBot::api() const { return ApiActions(*this); }",
+                "} // namespace tgpp\n",
+            ]
+        )
+        outputs["include/tgpp/api_builders.hpp"] = "\n".join(builders + facade)
         # Method code is split by complete implementation blocks, not line count.
         block_size = 12
         for index in range(0, len(self.spec["methods"]), block_size):

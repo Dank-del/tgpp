@@ -1,0 +1,6 @@
+if(TGPP_BUILD_TESTS AND TGPP_BUILD_ASYNC)
+    add_executable(tgpp_api_builder_tests tests/test_api_builders.cpp)
+    target_link_libraries(tgpp_api_builder_tests PRIVATE tgpp::async)
+    add_test(NAME api_builders COMMAND tgpp_api_builder_tests)
+    set_tests_properties(api_builders PROPERTIES TIMEOUT 30)
+endif()

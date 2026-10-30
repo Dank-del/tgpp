@@ -7,7 +7,7 @@ their handler classes share an injected domain service and repository.
 Build from the tgpp repository root:
 
 ```bash
-cmake -S . -B build -G Ninja -DTGPP_BUILD_EXAMPLES=ON -DCMAKE_CXX_STANDARD=17
+cmake -S . -B build -G Ninja -DTGPP_BUILD_EXAMPLES=ON -DCMAKE_CXX_STANDARD=20
 cmake --build build --parallel 2
 ctest --test-dir build --output-on-failure
 # Set TELEGRAM_BOT_TOKEN in the environment, then:
@@ -25,7 +25,8 @@ Task commands accept private chats and isolate tasks by user. Each feature has
 its own handlers and domain code; shared implementation details belong in
 `infrastructure/`, and cross-cutting update behavior belongs in `middleware/`.
 
-The example stops on unhandled API/transport/handler errors. Update the error
+Polling retries temporary update-retrieval errors with backoff. The example stops
+on permanent API errors and unhandled handler failures. Update the error
 policy and persistence adapter for your application. Ctrl+C takes effect after
 the current long poll or HTTP call finishes.
 

@@ -2,9 +2,19 @@
 
 ## 0.0.1-rc1
 
-First release candidate.
+First release candidate. The version stays unchanged during the async upgrade.
 
-- Generated C++17 API coverage for Bot API 10.3: 400 types, including the
+- C++20 coroutine client generated from the same pinned schema, using standalone
+  Asio and libcurl multi without Boost.
+- Ordered async handlers, scoped routers, middleware and lifecycle hooks;
+  bounded scheduling, cancellation, deadlines and polling recovery.
+- Streamed uploads/downloads and bounded blocking file helpers.
+- Optional reverse-proxy webhook listener and SQLite sessions/durable inbox;
+  versioned sessions, leases and fencing for developer-supplied distributed stores.
+- Installed CMake packages, Linux/macOS/Windows workflow coverage and local HTTP
+  benchmark drivers with pinned competitor build recipes.
+
+- Generated API coverage for Bot API 10.3: 400 types, including the
   upload runtime type, and 185 methods from a pinned, checksum-verified spec.
 - Class-based commands, callback handlers, nested routing, middleware,
   feature modules, lifecycle hooks, and explicit error policies.

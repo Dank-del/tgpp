@@ -16,7 +16,7 @@ cmake --build build/fetchcontent --parallel 2
 Copy `CMakeLists.txt` and `main.cpp` to a new directory to use them independently
 of a local tgpp checkout. Use `tgpp::tgpp` for the direct API client, or `tgpp::ext`
 for modules, handlers, polling, and concurrency; the latter includes the client
-dependency transitively. The target also propagates its C++17 requirement and
+dependency transitively. The target also propagates its C++20 requirement and
 header/dependency include paths.
 
 Dependency tests default off through `TGPP_BUILD_TESTS`, independently of the

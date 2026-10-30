@@ -1,0 +1,5 @@
+{
+  "tgbot-cpp": {"repository": "https://github.com/reo7sp/tgbot-cpp.git", "revision": "bff3045898dfb4a8af624e58552dab9cd3087c1f"},
+  "TGBM": {"repository": "https://github.com/bot-motherlib/TGBM.git", "revision": "7456033b00651440870987d313b6ebeed30f5f2d"},
+  "egorpugin/tgbot": {"repository": "https://github.com/egorpugin/tgbot.git", "revision": "000fc275f8197693b0cfe2924628a38c77aaa963"}
+}

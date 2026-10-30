@@ -2,13 +2,52 @@
 
 Current version: **0.0.1-rc1**.
 
-A generated C++17 client for the Telegram Bot API, using the same
+Write a Telegram bot in three lines:
+
+```cpp
+#include <tgpp/ext/bot_app.hpp>
+using namespace tgpp::ext;
+
+int main() {
+    BotApp app("YOUR_BOT_TOKEN");
+    app.command("start", "Welcome!");
+    app.run();
+}
+```
+
+`BotApp` owns the async runtime, connection pool, command routing, polling,
+Ctrl+C handling, and graceful cleanup. Link `tgpp::async_ext`. Commands also accept
+ordinary lambdas, including ones returning a typed Telegram result:
+
+```cpp
+app.command("hi", [](auto& ctx) { return ctx.reply("Hey!"); });
+app.on_text(echo());
+```
+
+Use the [fluent guide](docs/fluent.md) for keyboards, filters, message builders,
+advanced configuration, and the full generated API escape hatch. Build examples
+and run `python3 tools/run_example.py fluent_bot` to use a local `.env` token.
+
+A generated C++20 client for the Telegram Bot API, using the same
 [JSON specification](https://github.com/PaulSonOfLars/telegram-bot-api-spec)
 as [gotgbot](https://github.com/PaulSonOfLars/gotgbot).
 
 The pinned **Bot API 10.3** schema produces **400 types** (including the
 handwritten `InputFile` upload type) and **185 methods**. Generated code is
 checked in. Consumers need no Python or generator at build time.
+
+## Async runtime
+
+The C++20 coroutine client and application runtime use standalone Asio and libcurl
+multi. Link `tgpp::async` for `AsyncBot`, or `tgpp::async_ext` for ordered async
+handlers and polling. Boost is not a dependency. Webhooks and SQLite are optional.
+See [the async guide](docs/async.md) for setup, cancellation, streaming, persistence,
+and distributed adapter contracts. The synchronous APIs remain available.
+
+Build with `-DTGPP_BUILD_EXAMPLES=ON` and run `python3 tools/run_example.py async_bot`
+for the coroutine echo bot, or `async_showcase_bot` for all 33 showcase demos.
+Optional `-DTGPP_WITH_WEBHOOK=ON` and `-DTGPP_WITH_SQLITE=ON` enable the webhook and
+persistent inbox examples.
 
 ## Organizing a larger bot
 
@@ -46,7 +85,7 @@ python3 tools/run_example.py showcase_bot --tour
 
 ## Build
 
-Requires CMake 3.24+, a C++17 compiler, and libcurl development headers (7.56+).
+Requires CMake 3.24+, a C++20 compiler, and libcurl development headers (7.68+).
 For repository tests, first install and activate the development tools described
 under [Code formatting](#code-formatting).
 The JSON dependency is nlohmann/json: CMake uses an installed version (3.11+)
@@ -58,7 +97,7 @@ sudo apt-get install cmake ninja-build g++ libcurl4-openssl-dev
 # Fedora
 sudo dnf install cmake ninja-build gcc-c++ libcurl-devel
 
-cmake -S . -B build -G Ninja -DTGPP_BUILD_EXAMPLES=ON -DCMAKE_CXX_STANDARD=17
+cmake -S . -B build -G Ninja -DTGPP_BUILD_EXAMPLES=ON -DCMAKE_CXX_STANDARD=20
 cmake --build build --parallel 2
 ctest --test-dir build --output-on-failure
 ```
@@ -118,7 +157,7 @@ int main() {
     tgpp::Bot bot(std::make_shared<tgpp::CurlTransport>(token));
     tgpp::SendMessageRequest message{};
     message.chat_id = std::int64_t(123456789);
-    message.text = "Hello from C++17!";
+    message.text = "Hello from C++20!";
     auto sent = bot.send_message(message);
     return sent.message_id == 0 ? 1 : 0;
 }
@@ -131,7 +170,8 @@ Run the long polling echo bot with `TELEGRAM_BOT_TOKEN` set:
 ```
 
 Stop with Ctrl+C; an in-flight poll may take up to 30 seconds to finish.
-The small echo example exits on API or transport errors. For feature modules
+Polling retries temporary retrieval failures with backoff. Permanent API errors
+and unhandled handler failures stop the small echo example. For feature modules
 and class-based handlers, build and run `./build/examples/modular_bot/modular_bot`.
 `get_updates` and webhook registration methods are generated. A webhook server
 can feed updates into `Application::process_json()` using the same modules;
@@ -215,8 +255,8 @@ bot.send_media_group(album, {
 ## Errors and custom transports
 
 API failures throw `ApiError`, carrying `code`, optional `retry_after`, and
-optional `migrate_to_chat_id`. Transport and malformed response errors throw
-standard exceptions. Retries are explicit so a lost response does not silently
+optional `migrate_to_chat_id`. Transport failures throw typed `TransportError` subclasses; malformed responses
+throw `ProtocolError`. These remain compatible with standard exception handlers. Retries are explicit so a lost response does not silently
 duplicate a send operation.
 
 Implement `Transport::perform(const Request&)` to use another HTTP stack or

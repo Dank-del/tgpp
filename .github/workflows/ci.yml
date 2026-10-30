@@ -13,11 +13,21 @@ jobs:
       - run: python -m pip install -r tools/requirements-format.txt
       - run: python tools/format.py --check
       - run: python tools/generate.py --check
+      - run: python examples/async_showcase/generate.py --check
   build:
-    runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        compiler: [g++, clang++]
+        include:
+          - os: ubuntu-latest
+            compiler: g++
+          - os: ubuntu-latest
+            compiler: clang++
+          - os: macos-latest
+            compiler: clang++
+          - os: windows-latest
+            compiler: cl
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -26,16 +36,60 @@ jobs:
           cache: pip
           cache-dependency-path: tools/requirements-format.txt
       - run: python -m pip install -r tools/requirements-format.txt
-      - run: >-
-          sudo apt-get update &&
-          sudo apt-get install -y libcurl4-openssl-dev ninja-build
-      - run: python3 tools/generate.py --check
-      - run: >-
+      - if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libcurl4-openssl-dev libsqlite3-dev ninja-build
+      - if: runner.os == 'macOS'
+        run: |
+          brew install curl sqlite ninja
+          echo "CMAKE_PREFIX_PATH=$(brew --prefix curl):$(brew --prefix sqlite)" >> "$GITHUB_ENV"
+      - if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          vcpkg install curl:x64-windows sqlite3:x64-windows
+          "CMAKE_TOOLCHAIN_FILE=$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" >> $env:GITHUB_ENV
+      - run: python tools/generate.py --check
+      - run: python examples/async_showcase/generate.py --check
+      - name: Configure
+        shell: bash
+        env:
+          CXX: ${{ matrix.compiler }}
+        run: |
+          cmake -S . -B build -DCMAKE_CXX_STANDARD=20 \
+            -DTGPP_BUILD_EXAMPLES=ON -DTGPP_BUILD_BENCHMARKS=ON \
+            -DTGPP_WITH_WEBHOOK=ON -DTGPP_WITH_SQLITE=ON
+      - run: cmake --build build --config Release --parallel 2
+      - run: ctest --test-dir build -C Release --output-on-failure
+      - run: cmake --install build --config Release --prefix install
+      - name: Installed consumer
+        run: cmake -S tests/install_consumer -B installed-consumer -DCMAKE_PREFIX_PATH=${{ github.workspace }}/install
+      - run: cmake --build installed-consumer --config Release --parallel 2
+      - run: ctest --test-dir installed-consumer -C Release --output-on-failure
+  sanitizers:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        sanitizer: [address, thread]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -r tools/requirements-format.txt
+      - run: sudo apt-get update && sudo apt-get install -y libcurl4-openssl-dev libsqlite3-dev ninja-build
+      - name: Configure
+        run: >-
           cmake -S . -B build -G Ninja
-          -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
-          -DCMAKE_CXX_STANDARD=17
-          -DTGPP_BUILD_EXAMPLES=ON
-          -DTGPP_BUILD_BENCHMARKS=ON
+          -DTGPP_WITH_WEBHOOK=ON -DTGPP_WITH_SQLITE=ON
+          -DCMAKE_CXX_FLAGS="-fsanitize=${{ matrix.sanitizer }} -fno-omit-frame-pointer -g"
+          -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=${{ matrix.sanitizer }}"
       - run: cmake --build build --parallel 2
-      - run: ctest --test-dir build --output-on-failure
-      - run: ./build/tgpp_dispatch_bench
+      - run: ctest --test-dir build --output-on-failure -E 'generated|generator'
+  minimal:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        async: ['ON', 'OFF']
+    steps:
+      - uses: actions/checkout@v4
+      - run: cmake -S . -B build -DTGPP_BUILD_ASYNC=${{ matrix.async }} -DTGPP_WITH_CURL=OFF -DTGPP_BUILD_TESTS=OFF
+      - run: cmake --build build --parallel 2

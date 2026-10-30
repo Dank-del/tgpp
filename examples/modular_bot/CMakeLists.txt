@@ -2,7 +2,7 @@ add_library(
     modular_bot_domain features/tasks/domain/task_service.cpp
                        infrastructure/memory_task_repository.cpp
 )
-target_compile_features(modular_bot_domain PUBLIC cxx_std_17)
+target_compile_features(modular_bot_domain PUBLIC cxx_std_20)
 target_include_directories(modular_bot_domain PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
 add_library(

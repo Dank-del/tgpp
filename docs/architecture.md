@@ -7,7 +7,7 @@ are separate CMake targets:
 ```mermaid
 flowchart LR
     Spec["Pinned Telegram API spec"] --> Generator["Python generator"]
-    Generator --> Types["C++17 types and API methods"]
+    Generator --> Types["C++20 types and API methods"]
     Types --> Bot["tgpp::Bot"]
     Polling["Long polling"] --> App["Application workers"]
     Webhook["Webhook adapter"] --> App
@@ -385,3 +385,12 @@ a session store keyed to the relevant user/chat/business scope, and keep the
 transition rules in a domain service. A webhook adapter validates its request
 and calls `app.process_json(body)` through the same feature modules; an HTTP
 listener is left to your server stack.
+
+## Coroutine runtime
+
+The C++20 async client and dispatcher have separate targets and preserve the
+synchronous contracts described above. See [the async guide](async.md) for
+ordered coroutine handling, cancellation, polling recovery, streaming, webhooks,
+and persistent/distributed adapter contracts. Temporary polling retrieval failures
+now retry by default in both runtimes; handler side effects are not automatically
+retried by the client.

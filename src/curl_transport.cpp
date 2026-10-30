@@ -49,7 +49,15 @@ std::size_t write_body(char* data, std::size_t size, std::size_t count, void* ta
 void checked(CURLcode result) {
     // Never include the URL: it contains the bot token.
     if (result != CURLE_OK) {
-        throw std::runtime_error(std::string("HTTP transport: ") + curl_easy_strerror(result));
+        const bool retryable = result == CURLE_COULDNT_RESOLVE_HOST ||
+                               result == CURLE_COULDNT_RESOLVE_PROXY ||
+                               result == CURLE_COULDNT_CONNECT ||
+                               result == CURLE_OPERATION_TIMEDOUT || result == CURLE_SEND_ERROR ||
+                               result == CURLE_RECV_ERROR || result == CURLE_GOT_NOTHING ||
+                               result == CURLE_PARTIAL_FILE || result == CURLE_SSL_CONNECT_ERROR;
+        throw TransportError(std::string("HTTP transport: ") + curl_easy_strerror(result),
+                             retryable,
+                             static_cast<int>(result));
     }
 }
 } // namespace
@@ -186,7 +194,10 @@ Json CurlTransport::perform(const Request& request) {
             if (!safe_name(attachment.name) || !names.insert(attachment.name).second) {
                 throw std::invalid_argument("invalid or duplicate attachment name");
             }
-            if (attachment.file.path.empty()) {
+            if (attachment.file.source) {
+                throw std::invalid_argument("async upload sources require AsyncCurlTransport");
+            }
+            if (attachment.file.path.empty() && !attachment.file.memory) {
                 throw std::invalid_argument("upload path must not be empty");
             }
             auto* part = curl_mime_addpart(mime.get());
@@ -194,7 +205,14 @@ Json CurlTransport::perform(const Request& request) {
                 throw std::bad_alloc();
             }
             checked(curl_mime_name(part, attachment.name.c_str()));
-            checked(curl_mime_filedata(part, attachment.file.path.c_str()));
+            if (attachment.file.memory) {
+                checked(
+                    curl_mime_data(part,
+                                   reinterpret_cast<const char*>(attachment.file.memory->data()),
+                                   attachment.file.memory->size()));
+            } else {
+                checked(curl_mime_filedata(part, attachment.file.path.c_str()));
+            }
             const auto filename =
                 attachment.file.filename.empty()
                     ? std::filesystem::path(attachment.file.path).filename().string()
@@ -211,13 +229,17 @@ Json CurlTransport::perform(const Request& request) {
     try {
         json = Json::parse(response);
     } catch (const Json::exception&) {
-        throw std::runtime_error("HTTP " + std::to_string(status) + ": invalid JSON response");
+        if (status >= 500) {
+            throw TransportError("HTTP " + std::to_string(status), true, static_cast<int>(status));
+        }
+        throw ProtocolError("HTTP " + std::to_string(status) + ": invalid JSON response");
     }
     if (status < 200 || status >= 300) {
         // Telegram returns actionable JSON on 400/401/429. Preserve it for Client.
         if (!json.is_object() || !json.contains("ok") || !json.at("ok").is_boolean() ||
             json.at("ok").get<bool>()) {
-            throw std::runtime_error("HTTP " + std::to_string(status));
+            throw TransportError(
+                "HTTP " + std::to_string(status), status >= 500, static_cast<int>(status));
         }
     }
     return json;

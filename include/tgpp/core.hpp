@@ -1,10 +1,12 @@
 #pragma once
 
+#include <chrono>
 #include <cstdint>
 #include <memory>
 #include <nlohmann/json.hpp>
 #include <optional>
 #include <stdexcept>
+#include <stop_token>
 #include <string>
 #include <utility>
 #include <variant>
@@ -60,10 +62,57 @@ template <class T> class Box {
     }
 };
 
+class AsyncUploadSource;
+
+struct RequestControl {
+    std::stop_token stop;
+    std::optional<std::chrono::steady_clock::time_point> deadline;
+};
+
+class TransportError : public std::runtime_error {
+  public:
+    bool retryable;
+    int code;
+
+    TransportError(std::string message, bool retryable = false, int code = 0)
+        : std::runtime_error(std::move(message)), retryable(retryable), code(code) {}
+};
+
+class ProtocolError : public std::runtime_error {
+    using std::runtime_error::runtime_error;
+};
+
+class CancelledError : public TransportError {
+  public:
+    CancelledError() : TransportError("operation cancelled") {}
+};
+
+class TimeoutError : public TransportError {
+  public:
+    TimeoutError() : TransportError("operation deadline exceeded", true) {}
+};
+
+class OverloadError : public TransportError {
+  public:
+    OverloadError() : TransportError("request queue is full") {}
+};
+
 struct InputFile {
     std::string path;
     std::string filename;
     std::string content_type = "application/octet-stream";
+    std::shared_ptr<const std::vector<std::uint8_t>> memory;
+    std::shared_ptr<AsyncUploadSource> source;
+
+    static InputFile from_memory(std::vector<std::uint8_t> bytes,
+                                 std::string filename,
+                                 std::string content_type = "application/octet-stream") {
+        InputFile file;
+        file.filename = std::move(filename);
+        file.content_type = std::move(content_type);
+        file.memory = std::make_shared<const std::vector<std::uint8_t>>(std::move(bytes));
+        return file;
+    }
 };
 
 struct Attachment {
@@ -75,6 +124,7 @@ struct Request {
     std::string method;
     Json parameters = Json::object();
     std::vector<Attachment> files;
+    std::shared_ptr<RequestControl> control;
 
     // Extra named uploads support attach:// references inside media arrays.
     std::string attach(InputFile file) {
@@ -128,6 +178,8 @@ class Client {
 
     Json call(const Request& request) const;
 };
+
+Json decode_response(const Json& response);
 
 Json encode_file(const InputFile& file, Request* request);
 } // namespace tgpp

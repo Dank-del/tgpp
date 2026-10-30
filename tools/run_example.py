@@ -12,6 +12,11 @@ EXAMPLES = {
     "send_message": "build/send_message",
     "showcase_bot": "build/examples/showcase_bot/showcase_bot",
     "concurrent_bot": "build/concurrent_bot",
+    "async_bot": "build/async_bot",
+    "fluent_bot": "build/fluent_bot",
+    "async_showcase_bot": "build/async_showcase_bot",
+    "durable_async_bot": "build/durable_async_bot",
+    "webhook_bot": "build/webhook_bot",
 }
 
 

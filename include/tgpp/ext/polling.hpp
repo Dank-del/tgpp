@@ -2,9 +2,19 @@
 #include "application.hpp"
 #include "concurrent.hpp"
 #include <atomic>
+#include <chrono>
 
 namespace tgpp::ext {
+struct PollingRetryOptions {
+    bool enabled = true;
+    std::chrono::milliseconds initial_delay{1000};
+    std::chrono::milliseconds max_delay{30000};
+    // Called after a failed retrieval, never after a handler failure.
+    std::function<void(std::exception_ptr, std::chrono::milliseconds)> on_retry;
+};
+
 struct PollingOptions {
+    PollingRetryOptions retry;
     GetUpdatesRequest request;
 
     PollingOptions() {

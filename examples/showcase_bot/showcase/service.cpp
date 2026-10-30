@@ -157,7 +157,7 @@ void Service::execute(const std::string& job) {
         request.chat_id = chat_;
         request.text = "tgpp · Telegram showcase\n\nPick a message type below, or /tour for the "
                        "whole tour. /stop cancels the tour; /report shows what worked.\n\nAll "
-                       "media is bundled with the C++17 example. Newer features are tested "
+                       "media is bundled with the C++20 example. Newer features are tested "
                        "individually and reported if this bot/server cannot use them.";
         request.reply_markup = catalog_.keyboard();
         request.disable_notification = true;

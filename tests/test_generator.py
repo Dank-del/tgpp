@@ -1,4 +1,6 @@
 import importlib.util
+import copy
+import json
 import pathlib
 import unittest
 
@@ -9,6 +11,101 @@ module.loader.exec_module(generate)
 
 
 class GeneratorTests(unittest.TestCase):
+    def test_optional_upstream_fields_preserve_fluent_bridge_and_raw_escape_hatch(self):
+        spec = json.loads((path.parents[1] / "spec/api.json").read_text())
+        updated = copy.deepcopy(spec)
+        updated["methods"]["sendMessage"]["fields"].append(
+            {
+                "name": "future_optional_field",
+                "types": ["String"],
+                "required": False,
+                "description": "A future optional Telegram field.",
+            }
+        )
+        outputs = generate.Generator(updated, "test").generate()
+        raw = outputs["include/tgpp/methods.hpp"]
+        self.assertIn("std::optional<std::string> future_optional_field", raw)
+        codecs = "".join(
+            text for name, text in outputs.items() if name.startswith("src/generated/methods_")
+        )
+        self.assertIn('"future_optional_field"', codecs)
+        async_header = outputs["include/tgpp/async_methods.hpp"]
+        self.assertIn("ChatActions to(std::int64_t chat_id) const;", async_header)
+        self.assertIn("ChatActions to(std::string chat_id) const;", async_header)
+        self.assertIn('#include "fluent.hpp"', async_header)
+        self.assertNotIn("class MessageBuilder", async_header)
+        self.assertIn("make_request(options, std::move(attachments))", async_header)
+
+    def test_new_methods_and_fields_automatically_receive_typed_builders(self):
+        spec = json.loads((path.parents[1] / "spec/api.json").read_text())
+        spec["methods"]["futureAction"] = {
+            "href": "https://example.test/futureaction",
+            "description": ["A future API method."],
+            "returns": ["Boolean"],
+            "fields": [
+                {
+                    "name": "chat_id",
+                    "types": ["Integer", "String"],
+                    "required": True,
+                    "description": "Chat.",
+                },
+                {
+                    "name": "send",
+                    "types": ["String"],
+                    "required": False,
+                    "description": "A field sharing the terminal name.",
+                },
+                {
+                    "name": "requires",
+                    "types": ["Boolean"],
+                    "required": False,
+                    "description": "C++20 keyword field.",
+                },
+            ],
+        }
+        outputs = generate.Generator(spec, "test").generate()
+        builders = outputs["include/tgpp/api_builders.hpp"]
+        self.assertIn("class FutureActionBuilder final", builders)
+        self.assertIn(
+            "FutureActionBuilder& chat_id(std::variant<std::int64_t, std::string> value)", builders
+        )
+        self.assertIn("FutureActionBuilder& set_send(std::string value)", builders)
+        self.assertIn("FutureActionBuilder& requires_(bool value)", builders)
+        self.assertIn("this->builder_request_.send = std::move(value);", builders)
+        self.assertIn("api::FutureActionBuilder future_action() const", builders)
+        self.assertIn("this->mark_required(0);", builders)
+        self.assertEqual(builders.count(" final : public ApiRequestBuilder<"), len(spec["methods"]))
+        for name in spec["methods"]:
+            builder = name[0].upper() + name[1:] + "Builder"
+            self.assertIn(f"class {builder} final", builders)
+
+    def test_ambiguous_fluent_names_fail_before_generating_invalid_cpp(self):
+        spec = json.loads((path.parents[1] / "spec/api.json").read_text())
+        source = copy.deepcopy(spec["methods"]["sendMessage"])
+        spec["methods"]["api"] = source
+        with self.assertRaisesRegex(ValueError, "entry point"):
+            generate.Generator(spec, "test").generate()
+        del spec["methods"]["api"]
+        source["fields"].extend(
+            [
+                {
+                    "name": "send",
+                    "types": ["String"],
+                    "required": False,
+                    "description": "Collision one.",
+                },
+                {
+                    "name": "set_send",
+                    "types": ["String"],
+                    "required": False,
+                    "description": "Collision two.",
+                },
+            ]
+        )
+        spec["methods"]["futureAction"] = source
+        with self.assertRaisesRegex(ValueError, "setter collision"):
+            generate.Generator(spec, "test").generate()
+
     def test_only_recursive_components_need_boxing(self):
         graph = {"Leaf": set(), "A": {"B", "Leaf"}, "B": {"A"}, "C": {"Leaf"}}
         groups = generate.components(graph)

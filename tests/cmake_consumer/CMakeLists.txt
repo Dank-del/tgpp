@@ -13,6 +13,10 @@ set(TGPP_WITH_CURL
     OFF
     CACHE BOOL "" FORCE
 )
+set(TGPP_BUILD_ASYNC
+    OFF
+    CACHE BOOL "" FORCE
+)
 FetchContent_MakeAvailable(tgpp)
 
 if(NOT BUILD_TESTING)
