@@ -32,8 +32,8 @@ A generated C++20 client for the Telegram Bot API, using the same
 [JSON specification](https://github.com/PaulSonOfLars/telegram-bot-api-spec)
 as [gotgbot](https://github.com/PaulSonOfLars/gotgbot).
 
-The pinned **Bot API 10.3** schema produces **400 types** (including the
-handwritten `InputFile` upload type) and **185 methods**. Generated code is
+The pinned **Bot API 10.4** schema produces **425 types** (including the
+handwritten `InputFile` upload type) and **193 methods**. Generated code is
 checked in. Consumers need no Python or generator at build time.
 
 ## Async runtime
